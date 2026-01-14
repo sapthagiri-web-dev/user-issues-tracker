@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 const ConfirmationModal = ({
 	isOpen,
@@ -6,10 +7,16 @@ const ConfirmationModal = ({
 	message,
 	onConfirm,
 	onCancel,
-	confirmText = 'Confirm',
+	confirmText,
 	isDangerous = false
 }) => {
+	const { t } = useLanguage();
+
 	if (!isOpen) return null;
+
+	// Use passed prop OR translation default
+	const effectiveConfirmText = confirmText || t('modalConfirm');
+	const cancelText = t('modalCancel');
 
 	return (
 		<div className="modal-overlay">
@@ -19,13 +26,13 @@ const ConfirmationModal = ({
 
 				<div className="modal-actions">
 					<button className="secondary-btn" onClick={onCancel}>
-						Cancel
+						{cancelText}
 					</button>
 					<button
 						className={`primary-btn ${isDangerous ? 'danger-btn' : ''}`}
 						onClick={onConfirm}
 					>
-						{confirmText}
+						{effectiveConfirmText}
 					</button>
 				</div>
 			</div>

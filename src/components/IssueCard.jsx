@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './IssueCard.css';
+import { useLanguage } from '../context/LanguageContext';
 
 const Avatar = ({ name, role }) => {
 	const initials = name
@@ -27,6 +28,8 @@ const IssueCard = ({
 	status = 'Open',
 	dateReported
 }) => {
+	const { t } = useLanguage();
+
 	// Calculate Days Pending
 	const calculateDaysPending = (dateString) => {
 		if (!dateString) return 0;
@@ -40,7 +43,15 @@ const IssueCard = ({
 	const daysPending = calculateDaysPending(dateReported);
 	const formattedDate = dateReported
 		? new Date(dateReported).toLocaleDateString()
-		: 'Unknown';
+		: t('unknown');
+
+	// Status Translation Helper
+	const getStatusLabel = (s) => {
+		if (s === 'Open') return t('statusOpen');
+		if (s === 'In Progress') return t('statusInProgress');
+		if (s === 'Resolved') return t('statusResolved');
+		return s;
+	};
 
 	return (
 		<div className="glass-panel issue-card">
@@ -54,11 +65,11 @@ const IssueCard = ({
 					}}
 				>
 					<div className="status-badge" data-status={status}>
-						{status}
+						{getStatusLabel(status)}
 					</div>
 					{status === 'Open' && (
 						<span className="pending-badge" title="Days since reported">
-							⏱ {daysPending} days ago
+							⏱ {daysPending} {t('daysAgo')}
 						</span>
 					)}
 				</div>
@@ -73,24 +84,24 @@ const IssueCard = ({
 						marginTop: '0.25rem'
 					}}
 				>
-					Reported on: {formattedDate}
+					{t('reportedOn')}: {formattedDate}
 				</div>
 			</div>
 
 			<div className="card-body">
 				<div className="user-row">
-					<span className="label">Resident / Grama Vasi:</span>
+					<span className="label">{t('residentLabel')}:</span>
 					<div className="user-info">
 						<Avatar name={affectedUser} role="affected" />
-						<span className="user-name">{affectedUser || 'Unknown'}</span>
+						<span className="user-name">{affectedUser || t('unknown')}</span>
 					</div>
 				</div>
 
 				<div className="user-row">
-					<span className="label">Official / Karyakarta:</span>
+					<span className="label">{t('officialLabel')}:</span>
 					<div className="user-info">
 						<Avatar name={creator} role="creator" />
-						<span className="user-name">{creator || 'Unknown'}</span>
+						<span className="user-name">{creator || t('unknown')}</span>
 					</div>
 				</div>
 			</div>
@@ -101,7 +112,7 @@ const IssueCard = ({
 					className="action-btn"
 					style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
 				>
-					View Details
+					{t('viewDetails')}
 				</Link>
 			</div>
 		</div>

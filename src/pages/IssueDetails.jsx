@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { useLanguage } from '../context/LanguageContext';
 
 const IssueDetails = () => {
 	const { id } = useParams();
 	const navigate = useNavigate();
+	const { t } = useLanguage();
 
 	const [issue, setIssue] = useState(null);
 	const [attachments, setAttachments] = useState([]);
@@ -147,13 +149,20 @@ const IssueDetails = () => {
 		}
 	};
 
-	if (loading)
-		return <div className="container app-main">Loading details...</div>;
+	// Status Translation Helper
+	const getStatusLabel = (s) => {
+		if (s === 'Open') return t('statusOpen');
+		if (s === 'In Progress') return t('statusInProgress');
+		if (s === 'Resolved') return t('statusResolved');
+		return s;
+	};
+
+	if (loading) return <div className="container app-main">{t('loading')}</div>;
 
 	if (!issue) {
 		return (
 			<div className="container app-main" style={{ textAlign: 'center' }}>
-				<h2>Issue not found</h2>
+				<h2>{t('notFound')}</h2>
 				<Link
 					to="/"
 					className="primary-btn"
@@ -163,7 +172,7 @@ const IssueDetails = () => {
 						textDecoration: 'none'
 					}}
 				>
-					Back to Dashboard
+					{t('backToDashboard')}
 				</Link>
 			</div>
 		);
@@ -189,7 +198,7 @@ const IssueDetails = () => {
 						textDecoration: 'none'
 					}}
 				>
-					← Back to Dashboard
+					← {t('backToDashboard')}
 				</Link>
 
 				<button
@@ -205,7 +214,7 @@ const IssueDetails = () => {
 						cursor: 'pointer'
 					}}
 				>
-					{isDeleting ? 'Closing...' : '✓ Mark Resolved'}
+					{isDeleting ? t('closing') : t('markResolved')}
 				</button>
 			</div>
 
@@ -229,22 +238,22 @@ const IssueDetails = () => {
 						data-status={issue.status}
 						style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}
 					>
-						{issue.status}
+						{getStatusLabel(issue.status)}
 					</span>
 				</div>
 
 				<div className="details-layout">
 					<div className="details-main">
 						<section className="detail-section">
-							<h3 className="section-title">Description</h3>
+							<h3 className="section-title">{t('description')}</h3>
 							<p className="section-content">
 								{issue.description || 'No description provided.'}
 							</p>
 						</section>
 
 						<section className="detail-section">
-							<h3 className="section-title">Location</h3>
-							<p className="section-content">{issue.location || 'Unknown'}</p>
+							<h3 className="section-title">{t('location')}</h3>
+							<p className="section-content">{issue.location || t('unknown')}</p>
 						</section>
 
 						<section className="detail-section">
@@ -257,10 +266,10 @@ const IssueDetails = () => {
 								}}
 							>
 								<h3 className="section-title" style={{ marginBottom: 0 }}>
-									Documents / Dakhale
+									{t('documents')}
 								</h3>
 								<label className="upload-btn">
-									+ Add Document
+									{t('addDocument')}
 									<input
 										type="file"
 										onChange={handleFileUpload}
@@ -271,7 +280,7 @@ const IssueDetails = () => {
 
 							<div className="attachments-list">
 								{attachments.length === 0 && (
-									<div className="empty-state">No documents attached yet.</div>
+									<div className="empty-state">{t('noDocuments')}</div>
 								)}
 								{attachments.map((file) => (
 									<div key={file.id} className="attachment-item">
@@ -295,7 +304,7 @@ const IssueDetails = () => {
 								))}
 								{isUploading && (
 									<div className="attachment-item uploading">
-										<span className="spinner"></span> Uploading...
+										<span className="spinner"></span> {t('uploading')}
 									</div>
 								)}
 							</div>
@@ -304,27 +313,27 @@ const IssueDetails = () => {
 
 					<div className="details-sidebar">
 						<div className="sidebar-group">
-							<label className="label">Date Reported</label>
+							<label className="label">{t('dateReported')}</label>
 							<div className="value">
 								{issue.date_reported || issue.created_at?.slice(0, 10)}
 							</div>
 						</div>
 						<div className="sidebar-group">
-							<label className="label">Resident Affected</label>
+							<label className="label">{t('residentAffected')}</label>
 							<div className="user-card">
 								<div className="avatar avatar-affected">
 									{(issue.affected_user || '?').charAt(0)}
 								</div>
-								<span className="name">{issue.affected_user || 'Unknown'}</span>
+								<span className="name">{issue.affected_user || t('unknown')}</span>
 							</div>
 						</div>
 						<div className="sidebar-group">
-							<label className="label">Reported By</label>
+							<label className="label">{t('reportedBy')}</label>
 							<div className="user-card">
 								<div className="avatar avatar-creator">
 									{(issue.creator || '?').charAt(0)}
 								</div>
-								<span className="name">{issue.creator || 'Unknown'}</span>
+								<span className="name">{issue.creator || t('unknown')}</span>
 							</div>
 						</div>
 					</div>
@@ -333,9 +342,9 @@ const IssueDetails = () => {
 
 			<ConfirmationModal
 				isOpen={isModalOpen}
-				title="Resolve Issue?"
-				message="Are you sure you want to mark this as resolved? This will permanently delete the issue and all attached documents. This action cannot be undone."
-				confirmText="Yes, Resolve & Delete"
+				title={t('modalTitle')}
+				message={t('modalMessage')}
+				confirmText={t('modalConfirm')}
 				isDangerous={true}
 				onConfirm={handleConfirmResolve}
 				onCancel={() => setIsModalOpen(false)}

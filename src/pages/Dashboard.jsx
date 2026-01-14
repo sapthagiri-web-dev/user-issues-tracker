@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import IssueCard from '../components/IssueCard';
 // Import the initialized client
 import { supabase } from '../supabaseClient';
+import { useLanguage } from '../context/LanguageContext';
 
 const Dashboard = () => {
+	const { t } = useLanguage();
 	const [issues, setIssues] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -26,7 +28,7 @@ const Dashboard = () => {
 			setIssues(data);
 		} catch (error) {
 			console.error('Error fetching issues:', error);
-			setError('Failed to load issues. Please try again.');
+			setError(true); // Just set flag, allow render to handle translation
 		} finally {
 			setLoading(false);
 		}
@@ -48,10 +50,10 @@ const Dashboard = () => {
 						className="text-gradient"
 						style={{ fontSize: '2rem', marginBottom: '0.5rem' }}
 					>
-						Grama Samasya
+						{t('dashboardTitle')}
 					</h2>
 					<p style={{ color: 'hsl(var(--color-text-muted))' }}>
-						Reporting issues for our village development
+						{t('dashboardSubtitle')}
 					</p>
 				</div>
 				<Link
@@ -59,7 +61,7 @@ const Dashboard = () => {
 					className="primary-btn"
 					style={{ textDecoration: 'none' }}
 				>
-					+ Report Issue
+					{t('reportIssueBtn')}
 				</Link>
 			</div>
 
@@ -71,20 +73,18 @@ const Dashboard = () => {
 						color: 'hsl(var(--color-text-muted))'
 					}}
 				>
-					Loading issues...
+					{t('loading')}
 				</div>
 			)}
 
 			{error && (
 				<div style={{ textAlign: 'center', padding: '2rem', color: '#dc2626' }}>
-					{error}
+					{t('errorLoading')}
 				</div>
 			)}
 
 			{!loading && !error && issues.length === 0 && (
-				<div className="empty-state">
-					No issues found. Be the first to report one!
-				</div>
+				<div className="empty-state">{t('noIssues')}</div>
 			)}
 
 			<div className="issues-grid">
