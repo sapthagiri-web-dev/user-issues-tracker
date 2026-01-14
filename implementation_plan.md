@@ -1,57 +1,31 @@
-# Implementation Plan - Issue Details Navigation
+# Implementation Plan - Fix Document Download
 
-I will add client-side routing to enable a dedicated "Issue Details" page when a user clicks "View Details".
+I will fix the non-functional download button by implementing a client-side simulated download.
 
 ## User Review Required
 
-> [!IMPORTANT] > **Dependency Addition**: I will install `react-router-dom` to handle navigation between pages.
+> [!NOTE]
+> Since there are no real files on a server, I will generate a generic text file on the fly when "Download" is clicked, containing the filename as its content.
 
 ## Proposed Changes
 
-### 1. Project Structure
+### 1. Component Logic (`src/pages/IssueDetails.jsx`)
 
-- Turn `App.jsx` into the layout/router container.
-- Move current dashboard content to a new page component: `src/pages/Dashboard.jsx`.
+#### [MODIFY] `IssueDetails.jsx`
 
-### 2. Dependencies
-
-- Install `react-router-dom`.
-
-### 3. Components & Pages
-
-#### [NEW] `src/pages/Dashboard.jsx`
-
-- Contains the existing "Grama Samasya" header and `IssueCard` grid.
-- Allows `App.jsx` to be clean.
-
-#### [NEW] `src/pages/IssueDetails.jsx`
-
-- Displays full details of a specific issue.
-- **Route**: `/issue/:id`
-- **Content**:
-  - Title, Status, Description (mock text).
-  - Extended details about Affected User & Creator.
-  - "Back to Dashboard" button.
-  - Consistent "Rural" styling.
-
-#### [MODIFY] `src/App.jsx`
-
-- Setup `<BrowserRouter>`, `<Routes>`, and `<Route>`.
-- Define routes:
-  - `/` -> `Dashboard`
-  - `/issue/:id` -> `IssueDetails`
-
-#### [MODIFY] `src/components/IssueCard.jsx`
-
-- Change "View Details" button to a link/navigate action to `/issue/${id}`.
+- Add `handleDownload(file)` function.
+- **Logic**:
+  - Create a `Blob` with text content: `"Content of <filename>..."`.
+  - Create an object URL `URL.createObjectURL(blob)`.
+  - Create a temporary hidden `<a>` tag, set `href` and `download` attributes.
+  - Programmatically click it.
+  - Revoke the URL.
+- **UI Update**: Change the download button `onClick` to trigger this function.
 
 ## Verification Plan
 
-### Automated Tests
-
-- None.
-
 ### Manual Verification
 
-- Click "View Details" on a card -> Verify URL changes to `/issue/1` and Details page loads.
-- Click "Back" -> Verify return to Dashboard.
+- Click the download icon on an attachment.
+- Verify that a file is actually downloaded to the user's computer.
+- Open the file and check if it contains the dummy text.

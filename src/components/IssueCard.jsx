@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './IssueCard.css';
 
 const Avatar = ({ name, role }) => {
@@ -17,7 +18,7 @@ const Avatar = ({ name, role }) => {
 };
 
 // Renamed props internally to context but mapped from passed props
-const IssueCard = ({ title, affectedUser, creator, status = 'Open' }) => {
+const IssueCard = ({ id, title, affectedUser, creator, status = 'Open' }) => {
 	return (
 		<div className="glass-panel issue-card">
 			<div className="card-header">
@@ -46,7 +47,13 @@ const IssueCard = ({ title, affectedUser, creator, status = 'Open' }) => {
 			</div>
 
 			<div className="card-footer">
-				<button className="action-btn">View Details</button>
+				<Link
+					to={`/issue/${id}`}
+					className="action-btn"
+					style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
+				>
+					View Details
+				</Link>
 			</div>
 		</div>
 	);
