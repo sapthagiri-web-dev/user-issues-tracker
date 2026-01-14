@@ -1,31 +1,45 @@
-# Implementation Plan - Fix Document Download
+# Implementation Plan - Supabase Backend Migration
 
-I will fix the non-functional download button by implementing a client-side simulated download.
+I will migrate the application from using `MOCK_ISSUES` to a real Supabase backend.
 
-## User Review Required
+## User Action Required
 
-> [!NOTE]
-> Since there are no real files on a server, I will generate a generic text file on the fly when "Download" is clicked, containing the filename as its content.
+> [!IMPORTANT] > **Step 1**: You need to go to [supabase.com](https://supabase.com), sign up, and "Create a new project".
+> **Step 2**: Once created, you will need to copy the **Project URL** and **API Key (anon/public)**.
 
 ## Proposed Changes
 
-### 1. Component Logic (`src/pages/IssueDetails.jsx`)
+### 1. Setup & Configuration/Dependencies
 
-#### [MODIFY] `IssueDetails.jsx`
+- **Install**: `npm install @supabase/supabase-js`.
+- **Config**: Create `.env` file to store `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- **Client**: Create `src/supabaseClient.js` to initialize the connection.
 
-- Add `handleDownload(file)` function.
-- **Logic**:
-  - Create a `Blob` with text content: `"Content of <filename>..."`.
-  - Create an object URL `URL.createObjectURL(blob)`.
-  - Create a temporary hidden `<a>` tag, set `href` and `download` attributes.
-  - Programmatically click it.
-  - Revoke the URL.
-- **UI Update**: Change the download button `onClick` to trigger this function.
+### 2. Database Schema (I will provide the SQL to run in Supabase SQL Editor)
+
+- **Table `profiles`**: Users (Residents/Officials).
+- **Table `issues`**: The main issues.
+- **Table `issue_attachments`**: Links files to issues.
+- **RLS Policies**: Security rules (e.g., "Officials can delete").
+
+### 3. Frontend Refactoring
+
+#### [MODIFY] `src/pages/Dashboard.jsx`
+
+- Remove `MOCK_ISSUES`.
+- Use `useEffect` to `supabase.from('issues').select('*')`.
+- Handle loading state.
+
+#### [MODIFY] `src/pages/IssueDetails.jsx`
+
+- Fetch specific issue by ID.
+- Fetch linked attachments.
+- **Upload**: Implement real file upload to Supabase Storage bucket `issue-attachments`.
 
 ## Verification Plan
 
 ### Manual Verification
 
-- Click the download icon on an attachment.
-- Verify that a file is actually downloaded to the user's computer.
-- Open the file and check if it contains the dummy text.
+1. **Connection**: Verify the app doesn't crash on start.
+2. **Data Flow**: Create a row in Supabase Table Editor -> Refresh App -> See it appear.
+3. **Upload**: Upload a real file -> Check Supabase Storage bucket -> See file.

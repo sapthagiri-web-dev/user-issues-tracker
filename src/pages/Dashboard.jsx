@@ -1,45 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import IssueCard from '../components/IssueCard';
-
-const MOCK_ISSUES = [
-	{
-		id: 1,
-		title: 'Borewell motor repair needed in Ward 4',
-		affectedUser: 'Ramesh Farmer',
-		creator: 'Panchayat Officer',
-		status: 'Critical'
-	},
-	{
-		id: 2,
-		title: 'Streetlights not working on Main Temple Road',
-		affectedUser: 'Lakshmi Devi',
-		creator: 'Line Man',
-		status: 'Open'
-	},
-	{
-		id: 3,
-		title: 'Ration card distribution delay inquiry',
-		affectedUser: 'Basavaraj',
-		creator: 'Volunteer Group',
-		status: 'In Progress'
-	},
-	{
-		id: 4,
-		title: 'School waal compound collapsed due to rain',
-		affectedUser: 'Headmaster Ravi',
-		creator: 'AE Engineer',
-		status: 'Open'
-	},
-	{
-		id: 5,
-		title: 'Drinking water pipeline leak near bus stand',
-		affectedUser: 'Shop owners',
-		creator: 'Water Board',
-		status: 'Review'
-	}
-];
+// Import the initialized client
+import { supabase } from '../supabaseClient';
 
 const Dashboard = () => {
+	const [issues, setIssues] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
+
+	useEffect(() => {
+		fetchIssues();
+	}, []);
+
+	async function fetchIssues() {
+		try {
+			setLoading(true);
+
+			const { data, error } = await supabase
+				.from('issues')
+				.select('*')
+				.order('created_at', { ascending: false });
+
+			if (error) throw error;
+			setIssues(data);
+		} catch (error) {
+			console.error('Error fetching issues:', error);
+			setError('Failed to load issues. Please try again.');
+		} finally {
+			setLoading(false);
+		}
+	}
+
 	return (
 		<div className="container app-main">
 			<div
@@ -65,13 +56,39 @@ const Dashboard = () => {
 				<button className="primary-btn">+ Report Issue</button>
 			</div>
 
+			{loading && (
+				<div
+					style={{
+						textAlign: 'center',
+						padding: '2rem',
+						color: 'hsl(var(--color-text-muted))'
+					}}
+				>
+					Loading issues...
+				</div>
+			)}
+
+			{error && (
+				<div style={{ textAlign: 'center', padding: '2rem', color: '#dc2626' }}>
+					{error}
+				</div>
+			)}
+
+			{!loading && !error && issues.length === 0 && (
+				<div className="empty-state">
+					No issues found. Be the first to report one!
+				</div>
+			)}
+
 			<div className="issues-grid">
-				{MOCK_ISSUES.map((issue) => (
+				{issues.map((issue) => (
 					<IssueCard
 						key={issue.id}
 						id={issue.id}
 						title={issue.title}
-						affectedUser={issue.affectedUser}
+						// Mapping DB columns to props (snake_case to camelCase likely needed if DB is snake_case)
+						// Based on schema: affected_user, creator
+						affectedUser={issue.affected_user}
 						creator={issue.creator}
 						status={issue.status}
 					/>

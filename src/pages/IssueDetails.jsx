@@ -1,81 +1,105 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-
-const MOCK_ISSUES = [
-	{
-		id: 1,
-		title: 'Borewell motor repair needed in Ward 4',
-		affectedUser: 'Ramesh Farmer',
-		creator: 'Panchayat Officer',
-		status: 'Critical',
-		description:
-			'The main borewell supplying water to Ward 4 has been non-functional for 3 days. Crops are drying up and drinking water is scarce. We need immediate repair of the submersible pump.',
-		location: 'Ward 4, Near Govt School',
-		date: '2023-10-24',
-		initialAttachments: [
-			{ name: 'Complaint_Letter_Ward4.pdf', size: '1.2 MB' },
-			{ name: 'Motor_Condition_Photo.jpg', size: '2.4 MB' }
-		]
-	},
-	{
-		id: 2,
-		title: 'Streetlights not working on Main Temple Road',
-		affectedUser: 'Lakshmi Devi',
-		creator: 'Line Man',
-		status: 'Open',
-		description:
-			'Three streetlights near the Anjaneya temple are noticeably dim or completely off, causing safety concerns for women returning home in the evening.',
-		location: 'Temple Road',
-		date: '2023-10-25',
-		initialAttachments: []
-	},
-	{
-		id: 3,
-		title: 'Ration card distribution delay inquiry',
-		affectedUser: 'Basavaraj',
-		creator: 'Volunteer Group',
-		status: 'In Progress',
-		description:
-			'Many BPL families have not received their monthly rice quota. The shop owner claims server issues. We need clarification.',
-		location: 'Market Street',
-		date: '2023-10-22',
-		initialAttachments: [{ name: 'Beneficiary_List.xlsx', size: '15 KB' }]
-	},
-	{
-		id: 4,
-		title: 'School waal compound collapsed due to rain',
-		affectedUser: 'Headmaster Ravi',
-		creator: 'AE Engineer',
-		status: 'Open',
-		description:
-			'Heavy rains last night caused the compound wall of the primary school to collapse. It is a hazard for children playing nearby.',
-		location: 'Govt Primary School',
-		date: '2023-10-26',
-		initialAttachments: [{ name: 'Damage_Report.docx', size: '450 KB' }]
-	},
-	{
-		id: 5,
-		title: 'Drinking water pipeline leak near bus stand',
-		affectedUser: 'Shop owners',
-		creator: 'Water Board',
-		status: 'Review',
-		description:
-			'Clean drinking water is being wasted due to a pipe burst near the main bus stand circle. It is also creating a slushy mess.',
-		location: 'Bus Stand Circle',
-		date: '2023-10-23',
-		initialAttachments: []
-	}
-];
+import { supabase } from '../supabaseClient';
 
 const IssueDetails = () => {
 	const { id } = useParams();
-	const issue = MOCK_ISSUES.find((i) => i.id === parseInt(id));
 
-	// State for attachments (initialized from mock data or empty)
-	const [attachments, setAttachments] = useState(
-		issue ? issue.initialAttachments || [] : []
-	);
+	const [issue, setIssue] = useState(null);
+	const [attachments, setAttachments] = useState([]);
+	const [loading, setLoading] = useState(true);
 	const [isUploading, setIsUploading] = useState(false);
+
+	useEffect(() => {
+		fetchIssueDetails();
+		fetchAttachments();
+	}, [id]);
+
+	async function fetchIssueDetails() {
+		try {
+			const { data, error } = await supabase
+				.from('issues')
+				.select('*')
+				.eq('id', id)
+				.single();
+
+			if (error) throw error;
+			setIssue(data);
+		} catch (error) {
+			console.error('Error fetching issue:', error);
+		} finally {
+			// We will keep loading true until both finish, or handle fine-grained
+			// For simplicity, just letting this run separate
+			setLoading(false);
+		}
+	}
+
+	async function fetchAttachments() {
+		try {
+			const { data, error } = await supabase
+				.from('attachments')
+				.select('*')
+				.eq('issue_id', id);
+			if (error) throw error;
+			setAttachments(data || []);
+		} catch (error) {
+			console.error('Error fetching attachments:', error);
+		}
+	}
+
+	// File Upload Handling
+	const handleFileUpload = async (e) => {
+		const file = e.target.files[0];
+		if (!file) return;
+
+		setIsUploading(true);
+		try {
+			const fileExt = file.name.split('.').pop();
+			const fileName = `${Date.now()}_${Math.random()
+				.toString(36)
+				.substring(7)}.${fileExt}`;
+			const filePath = `${id}/${fileName}`; // Folder structure: IssueID/Filename
+
+			// 1. Upload to Supabase Storage
+			const { error: uploadError } = await supabase.storage
+				.from('issue-attachments')
+				.upload(filePath, file);
+
+			if (uploadError) throw uploadError;
+
+			// 2. Get Public URL (optional, if bucket is public)
+			const {
+				data: { publicUrl }
+			} = supabase.storage.from('issue-attachments').getPublicUrl(filePath);
+
+			// 3. Save metadata to DB
+			const { data: dbData, error: dbError } = await supabase
+				.from('attachments')
+				.insert([
+					{
+						issue_id: id,
+						file_name: file.name,
+						file_size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+						file_url: publicUrl
+					}
+				])
+				.select()
+				.single();
+
+			if (dbError) throw dbError;
+
+			// 4. Update UI
+			setAttachments((prev) => [...prev, dbData]);
+		} catch (error) {
+			alert('Error uploading file: ' + error.message);
+			console.error(error);
+		} finally {
+			setIsUploading(false);
+		}
+	};
+
+	if (loading)
+		return <div className="container app-main">Loading details...</div>;
 
 	if (!issue) {
 		return (
@@ -84,25 +108,17 @@ const IssueDetails = () => {
 				<Link
 					to="/"
 					className="primary-btn"
-					style={{ display: 'inline-block', marginTop: '1rem' }}
+					style={{
+						display: 'inline-block',
+						marginTop: '1rem',
+						textDecoration: 'none'
+					}}
 				>
 					Back to Dashboard
 				</Link>
 			</div>
 		);
 	}
-
-	const handleFileUpload = (e) => {
-		const file = e.target.files[0];
-		if (file) {
-			setIsUploading(true);
-			// Simulate network delay
-			setTimeout(() => {
-				setAttachments((prev) => [...prev, { name: file.name, size: '1.5 MB' }]); // Dummy size
-				setIsUploading(false);
-			}, 1000);
-		}
-	};
 
 	return (
 		<div className="container app-main">
@@ -148,12 +164,14 @@ const IssueDetails = () => {
 					<div className="details-main">
 						<section className="detail-section">
 							<h3 className="section-title">Description</h3>
-							<p className="section-content">{issue.description}</p>
+							<p className="section-content">
+								{issue.description || 'No description provided.'}
+							</p>
 						</section>
 
 						<section className="detail-section">
 							<h3 className="section-title">Location</h3>
-							<p className="section-content">{issue.location}</p>
+							<p className="section-content">{issue.location || 'Unknown'}</p>
 						</section>
 
 						<section className="detail-section">
@@ -182,14 +200,24 @@ const IssueDetails = () => {
 								{attachments.length === 0 && (
 									<div className="empty-state">No documents attached yet.</div>
 								)}
-								{attachments.map((file, index) => (
-									<div key={index} className="attachment-item">
+								{attachments.map((file) => (
+									<div key={file.id} className="attachment-item">
 										<div className="file-icon">📄</div>
 										<div className="file-info">
-											<div className="file-name">{file.name}</div>
-											<div className="file-size">{file.size}</div>
+											<div className="file-name">{file.file_name}</div>
+											<div className="file-size">{file.file_size}</div>
 										</div>
-										<button className="download-btn">⬇</button>
+										{file.file_url && (
+											<a
+												href={file.file_url}
+												target="_blank"
+												rel="noreferrer"
+												className="download-btn"
+												title="Download"
+											>
+												⬇
+											</a>
+										)}
 									</div>
 								))}
 								{isUploading && (
@@ -204,22 +232,26 @@ const IssueDetails = () => {
 					<div className="details-sidebar">
 						<div className="sidebar-group">
 							<label className="label">Date Reported</label>
-							<div className="value">{issue.date}</div>
+							<div className="value">
+								{issue.date_reported || issue.created_at?.slice(0, 10)}
+							</div>
 						</div>
 						<div className="sidebar-group">
 							<label className="label">Resident Affected</label>
 							<div className="user-card">
 								<div className="avatar avatar-affected">
-									{issue.affectedUser.charAt(0)}
+									{(issue.affected_user || '?').charAt(0)}
 								</div>
-								<span className="name">{issue.affectedUser}</span>
+								<span className="name">{issue.affected_user || 'Unknown'}</span>
 							</div>
 						</div>
 						<div className="sidebar-group">
 							<label className="label">Reported By</label>
 							<div className="user-card">
-								<div className="avatar avatar-creator">{issue.creator.charAt(0)}</div>
-								<span className="name">{issue.creator}</span>
+								<div className="avatar avatar-creator">
+									{(issue.creator || '?').charAt(0)}
+								</div>
+								<span className="name">{issue.creator || 'Unknown'}</span>
 							</div>
 						</div>
 					</div>
