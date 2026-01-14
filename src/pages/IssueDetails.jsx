@@ -15,10 +15,13 @@ const IssueDetails = () => {
 	const [attachments, setAttachments] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [isUploading, setIsUploading] = useState(false);
-	const [isDeleting, setIsDeleting] = useState(false);
 
-	// Modal State
-	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isDeletingIssue, setIsDeletingIssue] = useState(false);
+	const [isDeletingAttachment, setIsDeletingAttachment] = useState(false);
+
+	// Modal State handling
+	const [modalType, setModalType] = useState(null); // 'RESOLVE' or 'DELETE_ATTACHMENT'
+	const [attachmentToDelete, setAttachmentToDelete] = useState(null);
 
 	useEffect(() => {
 		async function fetchIssueDetails() {
@@ -59,7 +62,6 @@ const IssueDetails = () => {
 
 	// File Upload Handling
 	const handleFileUpload = async (e) => {
-		// Optional: Also check session here if uploads should be restricted
 		if (!session) {
 			alert('Please login to upload documents');
 			return;
@@ -74,21 +76,18 @@ const IssueDetails = () => {
 			const fileName = `${Date.now()}_${Math.random()
 				.toString(36)
 				.substring(7)}.${fileExt}`;
-			const filePath = `${id}/${fileName}`; // Folder structure: IssueID/Filename
+			const filePath = `${id}/${fileName}`;
 
-			// 1. Upload to Supabase Storage
 			const { error: uploadError } = await supabase.storage
 				.from('issue-attachments')
 				.upload(filePath, file);
 
 			if (uploadError) throw uploadError;
 
-			// 2. Get Public URL (optional, if bucket is public)
 			const {
 				data: { publicUrl }
 			} = supabase.storage.from('issue-attachments').getPublicUrl(filePath);
 
-			// 3. Save metadata to DB
 			const { data: dbData, error: dbError } = await supabase
 				.from('attachments')
 				.insert([
@@ -104,7 +103,6 @@ const IssueDetails = () => {
 
 			if (dbError) throw dbError;
 
-			// 4. Update UI
 			setAttachments((prev) => [...prev, dbData]);
 		} catch (error) {
 			alert('Error uploading file: ' + error.message);
@@ -114,46 +112,104 @@ const IssueDetails = () => {
 		}
 	};
 
-	const handleResolveClick = () => {
-		setIsModalOpen(true);
+	// --- Deletion Handlers ---
+
+	const initiateResolve = () => {
+		setModalType('RESOLVE');
 	};
 
-	const handleConfirmResolve = async () => {
-		setIsModalOpen(false);
-		setIsDeleting(true);
+	const initiateDeleteAttachment = (file) => {
+		setAttachmentToDelete(file);
+		setModalType('DELETE_ATTACHMENT');
+	};
+
+	const handleConfirmAction = async () => {
+		if (modalType === 'RESOLVE') {
+			await resolveIssue();
+		} else if (modalType === 'DELETE_ATTACHMENT') {
+			await deleteAttachment();
+		}
+		setModalType(null);
+		setAttachmentToDelete(null);
+	};
+
+	const resolveIssue = async () => {
+		setIsDeletingIssue(true);
 		try {
-			// 1. List files in the issue's folder
 			const { data: files, error: listError } = await supabase.storage
 				.from('issue-attachments')
 				.list(`${id}/`);
 
-			if (listError)
-				console.warn('Error listing files (might be empty):', listError);
+			if (listError) console.warn('Error listing files:', listError);
 
-			// 2. Delete files from storage if any exist
 			if (files && files.length > 0) {
 				const filesToRemove = files.map((x) => `${id}/${x.name}`);
 				const { error: removeError } = await supabase.storage
 					.from('issue-attachments')
 					.remove(filesToRemove);
-
 				if (removeError) throw removeError;
 			}
 
-			// 3. Delete Issue
 			const { error: deleteError } = await supabase
 				.from('issues')
 				.delete()
 				.eq('id', id);
 
 			if (deleteError) throw deleteError;
-
 			navigate('/');
 		} catch (error) {
 			alert('Error deleting issue: ' + error.message);
 			console.error(error);
 		} finally {
-			setIsDeleting(false);
+			setIsDeletingIssue(false);
+		}
+	};
+
+	const deleteAttachment = async () => {
+		if (!attachmentToDelete) return;
+
+		setIsDeletingAttachment(true);
+		try {
+			// 1. Delete from Storage
+			// Extract filename from URL or just use stored name if consistent
+			// The structure we used was IssueID/Filename.
+			// But our DB has file_url. We need to reconstruct the path or name.
+			// Actually, we uploaded as `${id}/${fileName}`.
+			// Wait, 'file_name' in DB is original name?
+			// In handleFileUpload: `filePath = ${id}/${fileName}`
+			// We stored `file.name` in DB as `file_name`. The unique name was `fileName`.
+			// CRITICAL FIX: We need the actual storage path to delete.
+			// Option A: Parse it from publicUrl if possible.
+			// Option B: Store storage_path in DB.
+
+			// Let's rely on listing method or parsing URL.
+			// publicUrl format: .../issue-attachments/issueId/filename
+			const urlParts = attachmentToDelete.file_url.split('/issue-attachments/');
+			if (urlParts.length < 2) throw new Error('Invalid file URL format');
+
+			const storagePath = urlParts[1];
+
+			const { error: storageError } = await supabase.storage
+				.from('issue-attachments')
+				.remove([storagePath]);
+
+			if (storageError) throw storageError;
+
+			// 2. Delete from DB
+			const { error: dbError } = await supabase
+				.from('attachments')
+				.delete()
+				.eq('id', attachmentToDelete.id);
+
+			if (dbError) throw dbError;
+
+			// 3. Update UI
+			setAttachments((prev) => prev.filter((a) => a.id !== attachmentToDelete.id));
+		} catch (error) {
+			alert('Error deleting document: ' + error.message);
+			console.error(error);
+		} finally {
+			setIsDeletingAttachment(false);
 		}
 	};
 
@@ -186,6 +242,28 @@ const IssueDetails = () => {
 		);
 	}
 
+	// Determine Modal Props based on type
+	const getModalProps = () => {
+		if (modalType === 'RESOLVE') {
+			return {
+				title: t('modalTitle'),
+				message: t('modalMessage'),
+				confirmText: t('modalConfirm'),
+				isDangerous: true
+			};
+		} else {
+			// DELETE_ATTACHMENT
+			return {
+				title: t('deleteAttachmentTitle'),
+				message: t('deleteAttachmentMessage'),
+				confirmText: t('deleteAttachmentConfirm'),
+				isDangerous: true
+			};
+		}
+	};
+
+	const modalProps = getModalProps();
+
 	return (
 		<div className="container app-main">
 			<div
@@ -211,8 +289,8 @@ const IssueDetails = () => {
 
 				{session && (
 					<button
-						onClick={handleResolveClick}
-						disabled={isDeleting}
+						onClick={initiateResolve}
+						disabled={isDeletingIssue}
 						style={{
 							background: '#fee2e2',
 							color: '#b91c1c',
@@ -223,7 +301,7 @@ const IssueDetails = () => {
 							cursor: 'pointer'
 						}}
 					>
-						{isDeleting ? t('closing') : t('markResolved')}
+						{isDeletingIssue ? t('closing') : t('markResolved')}
 					</button>
 				)}
 			</div>
@@ -254,6 +332,7 @@ const IssueDetails = () => {
 
 				<div className="details-layout">
 					<div className="details-main">
+						{/* ... Description Description ... */}
 						<section className="detail-section">
 							<h3 className="section-title">{t('description')}</h3>
 							<p className="section-content">
@@ -301,17 +380,40 @@ const IssueDetails = () => {
 											<div className="file-name">{file.file_name}</div>
 											<div className="file-size">{file.file_size}</div>
 										</div>
-										{file.file_url && (
-											<a
-												href={file.file_url}
-												target="_blank"
-												rel="noreferrer"
-												className="download-btn"
-												title="Download"
-											>
-												⬇
-											</a>
-										)}
+										<div
+											className="file-actions"
+											style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+										>
+											{file.file_url && (
+												<a
+													href={file.file_url}
+													target="_blank"
+													rel="noreferrer"
+													className="download-btn"
+													title="Download"
+												>
+													⬇
+												</a>
+											)}
+											{session && (
+												<button
+													onClick={() => initiateDeleteAttachment(file)}
+													className="delete-btn"
+													title="Delete"
+													disabled={isDeletingAttachment}
+													style={{
+														background: 'none',
+														border: 'none',
+														cursor: 'pointer',
+														color: '#ef4444',
+														fontSize: '1.1rem',
+														padding: '4px'
+													}}
+												>
+													🗑
+												</button>
+											)}
+										</div>
 									</div>
 								))}
 								{isUploading && (
@@ -330,6 +432,7 @@ const IssueDetails = () => {
 								{issue.date_reported || issue.created_at?.slice(0, 10)}
 							</div>
 						</div>
+						{/* ... other sidebar items ... */}
 						<div className="sidebar-group">
 							<label className="label">{t('residentAffected')}</label>
 							<div className="user-card">
@@ -353,13 +456,16 @@ const IssueDetails = () => {
 			</div>
 
 			<ConfirmationModal
-				isOpen={isModalOpen}
-				title={t('modalTitle')}
-				message={t('modalMessage')}
-				confirmText={t('modalConfirm')}
-				isDangerous={true}
-				onConfirm={handleConfirmResolve}
-				onCancel={() => setIsModalOpen(false)}
+				isOpen={!!modalType}
+				title={modalProps.title}
+				message={modalProps.message}
+				confirmText={modalProps.confirmText}
+				isDangerous={modalProps.isDangerous}
+				onConfirm={handleConfirmAction}
+				onCancel={() => {
+					setModalType(null);
+					setAttachmentToDelete(null);
+				}}
 			/>
 		</div>
 	);

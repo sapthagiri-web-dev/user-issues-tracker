@@ -55,7 +55,13 @@ export const translations = {
 		modalMessage:
 			'Are you sure you want to mark this as resolved? This will permanently delete the issue and all attached documents. This action cannot be undone.',
 		modalConfirm: 'Yes, Resolve & Delete',
-		modalCancel: 'Cancel'
+		modalCancel: 'Cancel',
+
+		// Attachment Delete
+		deleteAttachmentTitle: 'Delete Document?',
+		deleteAttachmentMessage:
+			'Are you sure you want to delete this document? This cannot be undone.',
+		deleteAttachmentConfirm: 'Delete'
 	},
 	kn: {
 		appTitle: 'ಕೆ.ಆರ್.ಎಸ್ ಗ್ರಾಮ ಸೇವೆ',
@@ -109,7 +115,13 @@ export const translations = {
 		modalMessage:
 			'ಈ ಸಮಸ್ಯೆಯನ್ನು ಪರಿಹರಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲು ನೀವು ಖಚಿತವಾಗಿದ್ದೀರಾ? ಇದು ಸಮಸ್ಯೆ ಮತ್ತು ಎಲ್ಲಾ ಲಗತ್ತಿಸಿದ ದಾಖಲೆಗಳನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸುತ್ತದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗುವುದಿಲ್ಲ.',
 		modalConfirm: 'ಹೌದು, ಪರಿಹರಿಸಿ ಮತ್ತು ಅಳಿಸಿ',
-		modalCancel: 'ರದ್ದುಮಾಡಿ'
+		modalCancel: 'ರದ್ದುಮಾಡಿ',
+
+		// Attachment Delete
+		deleteAttachmentTitle: 'ದಾಖಲೆ ಅಳಿಸುವುದೇ?',
+		deleteAttachmentMessage:
+			'ಈ ದಾಖಲೆಯನ್ನು ಅಳಿಸಲು ನೀವು ಖಚಿತವಾಗಿದ್ದೀರಾ? ಇದನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗುವುದಿಲ್ಲ.',
+		deleteAttachmentConfirm: 'ಅಳಿಸಿ'
 	}
 };
 
