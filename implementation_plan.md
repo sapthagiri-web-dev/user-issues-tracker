@@ -1,58 +1,57 @@
-# Implementation Plan - KRS User Issue Tracker
+# Implementation Plan - Issue Details Navigation
 
-I will set up the initial project structure and implement the requested Navbar with the title "KRS User Issue Tracker".
+I will add client-side routing to enable a dedicated "Issue Details" page when a user clicks "View Details".
 
 ## User Review Required
 
-> [!IMPORTANT]
-> I will replace the default Vite CSS with a custom design system to ensure a premium look and feel as per the system instructions.
-
-- **Design System**: utilizing a modern color palette (dark mode/sleek) and standardizing typography.
-- **Navbar**: A responsive, aesthetic navbar containing the title.
+> [!IMPORTANT] > **Dependency Addition**: I will install `react-router-dom` to handle navigation between pages.
 
 ## Proposed Changes
 
-### 1. Design System Setup
+### 1. Project Structure
 
-#### [NEW] `src/index.css`
+- Turn `App.jsx` into the layout/router container.
+- Move current dashboard content to a new page component: `src/pages/Dashboard.jsx`.
 
-- Reset CSS (box-sizing, margins).
-- Define CSS variables for colors (Primary, Surface, Text, Accent).
-- Set global typography (Inter/System fonts).
-- Add utility classes for common layouts (flex, grid).
+### 2. Dependencies
 
-### 2. Branding & Assets
+- Install `react-router-dom`.
 
-#### [UPDATE] `index.html`
+### 3. Components & Pages
 
-- Update title tag to "KRS User Issue Tracker".
-- (Optional) Update favicon if needed later.
+#### [NEW] `src/pages/Dashboard.jsx`
 
-### 3. Components
+- Contains the existing "Grama Samasya" header and `IssueCard` grid.
+- Allows `App.jsx` to be clean.
 
-#### [NEW] `src/components/Navbar.jsx`
+#### [NEW] `src/pages/IssueDetails.jsx`
 
-- Structure: `<nav>` element with a logo/title section.
-- Content: "KRS User Issue Tracker" text.
-- Styling: Glassmorphism effect, sticky positioning, modern spacing.
+- Displays full details of a specific issue.
+- **Route**: `/issue/:id`
+- **Content**:
+  - Title, Status, Description (mock text).
+  - Extended details about Affected User & Creator.
+  - "Back to Dashboard" button.
+  - Consistent "Rural" styling.
 
-### 4. Application Entry
+#### [MODIFY] `src/App.jsx`
 
-#### [UPDATE] `src/App.jsx`
+- Setup `<BrowserRouter>`, `<Routes>`, and `<Route>`.
+- Define routes:
+  - `/` -> `Dashboard`
+  - `/issue/:id` -> `IssueDetails`
 
-- Clear default Vite template code.
-- Import and render `<Navbar />`.
-- Add a placeholder container for future content.
+#### [MODIFY] `src/components/IssueCard.jsx`
+
+- Change "View Details" button to a link/navigate action to `/issue/${id}`.
 
 ## Verification Plan
 
 ### Automated Tests
 
-- None at this stage.
+- None.
 
 ### Manual Verification
 
-- Run `npm run dev`.
-- Verify the Navbar appears at the top.
-- Check "KRS User Issue Tracker" text is visible and styled correctly.
-- Ensure the app looks "premium" (no default Times New Roman or unstyled HTML).
+- Click "View Details" on a card -> Verify URL changes to `/issue/1` and Details page loads.
+- Click "Back" -> Verify return to Dashboard.

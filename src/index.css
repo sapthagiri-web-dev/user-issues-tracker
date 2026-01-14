@@ -1,68 +1,108 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+	/* HSL Color Palette - Rural Karnataka / Nature Theme */
+	/* Earthy, Warm, Reliable */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+	/* Background: Warm Cream/Beige (like old paper or walls) */
+	--color-bg-base: 40 20% 97%;
+	--color-bg-surface: 0 0% 100%;
+	--color-bg-highlight: 40 30% 90%;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	/* Text: Dark Earth/Coffee for high contrast */
+	--color-text-primary: 30 15% 15%;
+	--color-text-secondary: 30 10% 35%;
+	--color-text-muted: 30 5% 50%;
+
+	/* Primary: Agricultural / Forest Green */
+	--color-primary: 145 60% 35%;
+	--color-primary-glow: 145 60% 35% / 0.3;
+
+	/* Accent: Turmeric / Marigold Yellow */
+	--color-accent: 45 90% 50%;
+	--color-accent-glow: 45 90% 50% / 0.3;
+
+	/* Status Colors */
+	--color-success: 145 70% 40%;
+	--color-error: 0 70% 50%;
+	--color-warning: 35 90% 55%;
+
+	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+	--spacing-xs: 0.25rem;
+	--spacing-sm: 0.5rem;
+	--spacing-md: 1rem;
+	--spacing-lg: 1.5rem;
+	--spacing-xl: 3rem;
+
+	--radius-sm: 0.375rem;
+	--radius-md: 0.5rem;
+	--radius-lg: 0.75rem;
+
+	--shadow-sm: 0 1px 2px 0 rgb(50 40 30 / 0.05);
+	--shadow-md: 0 4px 6px -1px rgb(50 40 30 / 0.1),
+		0 2px 4px -1px rgb(50 40 30 / 0.06);
+	--shadow-lg: 0 10px 15px -3px rgb(50 40 30 / 0.1),
+		0 4px 6px -2px rgb(50 40 30 / 0.05);
+
+	--header-height: 4.5rem;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* Reset & Base */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+	font-family: var(--font-sans);
+	background-color: hsl(var(--color-bg-base));
+	color: hsl(var(--color-text-primary));
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	line-height: 1.2;
+	font-weight: 700;
+	color: hsl(var(--color-primary)); /* Using Primary Green for Headers */
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+a {
+	color: hsl(var(--color-primary));
+	text-decoration: none;
+	transition: opacity 0.2s;
+	font-weight: 500;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+a:hover {
+	text-decoration: underline;
+}
+
+/* Utilities */
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 var(--spacing-lg);
+}
+
+.glass-panel {
+	/* Changed to "Paper Card" style for this theme */
+	background: hsl(var(--color-bg-surface));
+	border: 1px solid hsl(var(--color-primary) / 0.1);
+	border-radius: var(--radius-md);
+	box-shadow: var(--shadow-md);
+}
+
+.text-gradient {
+	/* Changed to solid color for better readability in this theme */
+	color: hsl(var(--color-primary));
 }

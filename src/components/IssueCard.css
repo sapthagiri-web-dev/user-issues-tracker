@@ -1,0 +1,131 @@
+.issue-card {
+	padding: var(--spacing-lg);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-md);
+	transition: transform 0.2s, box-shadow 0.2s;
+	height: 100%;
+	background-color: white; /* Clean card background */
+	border-left: 4px solid transparent;
+}
+
+.issue-card:hover {
+	transform: translateY(-4px);
+	box-shadow: var(--shadow-lg);
+	border-left-color: hsl(var(--color-primary)); /* Green accent on hover */
+}
+
+.card-header {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-sm);
+	align-items: flex-start;
+}
+
+.status-badge {
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-weight: 700;
+	padding: 0.25rem 0.6rem;
+	border-radius: 2rem; /* Pill shape */
+	background: hsl(var(--color-bg-base));
+	color: hsl(var(--color-text-secondary));
+	border: 1px solid hsl(var(--color-text-muted) / 0.2);
+}
+
+.status-badge[data-status='Critical'] {
+	background-color: #fee2e2;
+	color: #b91c1c;
+	border-color: #fca5a5;
+}
+
+.status-badge[data-status='Open'] {
+	background-color: #dbeafe;
+	color: #1e40af;
+	border-color: #93c5fd;
+}
+
+.issue-title {
+	font-size: 1.15rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: hsl(var(--color-text-primary));
+}
+
+.card-body {
+	margin-top: auto;
+	padding-top: var(--spacing-md);
+	border-top: 1px solid hsl(var(--color-bg-highlight));
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-sm);
+}
+
+.user-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 0.9rem;
+}
+
+.label {
+	color: hsl(var(--color-text-muted));
+	font-size: 0.85rem;
+}
+
+.user-info {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-sm);
+}
+
+.user-name {
+	color: hsl(var(--color-text-primary)); /* Darker text for readability */
+	font-weight: 600;
+}
+
+/* Avatar Styles */
+.avatar {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: white;
+	box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+}
+
+.avatar-affected {
+	background-color: hsl(var(--color-accent)); /* Turmeric Yellow/Orange */
+	color: hsl(var(--color-text-primary));
+}
+
+.avatar-creator {
+	background-color: hsl(var(--color-primary)); /* Green */
+}
+
+.card-footer {
+	margin-top: var(--spacing-xs);
+}
+
+.action-btn {
+	width: 100%;
+	padding: var(--spacing-sm);
+	background: hsl(var(--color-bg-base));
+	border: 1px solid hsl(var(--color-primary) / 0.3);
+	color: hsl(var(--color-primary));
+	border-radius: var(--radius-md);
+	cursor: pointer;
+	transition: all 0.2s;
+	font-weight: 600;
+	font-size: 0.9rem;
+}
+
+.action-btn:hover {
+	background: hsl(var(--color-primary));
+	color: white;
+}

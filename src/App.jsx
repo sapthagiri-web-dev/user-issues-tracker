@@ -1,35 +1,88 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import Navbar from './components/Navbar';
+import IssueCard from './components/IssueCard';
+import './App.css';
+
+const MOCK_ISSUES = [
+	{
+		id: 1,
+		title: 'Borewell motor repair needed in Ward 4',
+		affectedUser: 'Ramesh Farmer',
+		creator: 'Panchayat Officer',
+		status: 'Critical'
+	},
+	{
+		id: 2,
+		title: 'Streetlights not working on Main Temple Road',
+		affectedUser: 'Lakshmi Devi',
+		creator: 'Line Man',
+		status: 'Open'
+	},
+	{
+		id: 3,
+		title: 'Ration card distribution delay inquiry',
+		affectedUser: 'Basavaraj',
+		creator: 'Volunteer Group',
+		status: 'In Progress'
+	},
+	{
+		id: 4,
+		title: 'School waal compound collapsed due to rain',
+		affectedUser: 'Headmaster Ravi',
+		creator: 'AE Engineer',
+		status: 'Open'
+	},
+	{
+		id: 5,
+		title: 'Drinking water pipeline leak near bus stand',
+		affectedUser: 'Shop owners',
+		creator: 'Water Board',
+		status: 'Review'
+	}
+];
 
 function App() {
-  const [count, setCount] = useState(0)
+	return (
+		<div className="app">
+			<Navbar />
+			<main className="container app-main">
+				<div
+					className="header-actions"
+					style={{
+						marginBottom: '2rem',
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'center'
+					}}
+				>
+					<div>
+						<h2
+							className="text-gradient"
+							style={{ fontSize: '2rem', marginBottom: '0.5rem' }}
+						>
+							Grama Samasya
+						</h2>
+						<p style={{ color: 'hsl(var(--color-text-muted))' }}>
+							Reporting issues for our village development
+						</p>
+					</div>
+					<button className="primary-btn">+ Report Issue</button>
+				</div>
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+				<div className="issues-grid">
+					{MOCK_ISSUES.map((issue) => (
+						<IssueCard
+							key={issue.id}
+							title={issue.title}
+							affectedUser={issue.affectedUser}
+							creator={issue.creator}
+							status={issue.status}
+						/>
+					))}
+				</div>
+			</main>
+		</div>
+	);
 }
 
-export default App
+export default App;

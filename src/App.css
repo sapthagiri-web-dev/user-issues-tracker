@@ -1,42 +1,81 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Layout & Navbar Styles */
+
+.navbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: var(--header-height);
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	border-radius: 0;
+	border: none;
+	background-color: hsl(
+		var(--color-bg-surface)
+	); /* Solid background for header */
+	box-shadow: var(--shadow-sm);
+	border-bottom: 2px solid hsl(var(--color-accent)); /* Turmeric line at bottom */
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.navbar-content {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.logo-section {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-sm);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.logo-icon {
+	width: 36px;
+	height: 36px;
+	background-color: hsl(var(--color-primary));
+	border-radius: 50%; /* Circle for more organic feel */
+	border: 3px solid hsl(var(--color-accent));
 }
 
-.card {
-  padding: 2em;
+.logo-text {
+	font-size: 1.35rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	color: hsl(var(--color-primary));
 }
 
-.read-the-docs {
-  color: #888;
+/* Main Content Area */
+.app-main {
+	padding-top: calc(var(--header-height) + var(--spacing-xl));
+	min-height: 100vh;
+}
+
+.primary-btn {
+	background: hsl(var(--color-primary));
+	color: white;
+	border: none;
+	padding: 0.75rem 1.5rem;
+	border-radius: 2rem; /* Rounded button */
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: var(--shadow-md);
+	transition: all 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.primary-btn:hover {
+	background: hsl(145 65% 30%); /* Darker green */
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-lg);
+}
+
+.issues-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: var(--spacing-lg);
+	padding-bottom: var(--spacing-xl);
 }
