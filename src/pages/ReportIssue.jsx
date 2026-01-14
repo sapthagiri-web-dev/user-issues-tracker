@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import './ReportIssue.css';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 const ReportIssue = () => {
 	const navigate = useNavigate();
 	const { t } = useLanguage();
+	const { session, loading: authLoading } = useAuth();
+
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 
@@ -18,6 +21,12 @@ const ReportIssue = () => {
 		creator: '', // Reported By
 		status: 'Open'
 	});
+
+	useEffect(() => {
+		if (!authLoading && !session) {
+			navigate('/login');
+		}
+	}, [session, authLoading, navigate]);
 
 	const handleChange = (e) => {
 		setFormData({
@@ -49,6 +58,8 @@ const ReportIssue = () => {
 			setLoading(false);
 		}
 	};
+
+	if (authLoading) return null; // Or a spinner
 
 	return (
 		<div className="container app-main">

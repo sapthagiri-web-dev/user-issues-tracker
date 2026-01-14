@@ -3,11 +3,13 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 const IssueDetails = () => {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const { t } = useLanguage();
+	const { session } = useAuth();
 
 	const [issue, setIssue] = useState(null);
 	const [attachments, setAttachments] = useState([]);
@@ -57,6 +59,12 @@ const IssueDetails = () => {
 
 	// File Upload Handling
 	const handleFileUpload = async (e) => {
+		// Optional: Also check session here if uploads should be restricted
+		if (!session) {
+			alert('Please login to upload documents');
+			return;
+		}
+
 		const file = e.target.files[0];
 		if (!file) return;
 
@@ -201,21 +209,23 @@ const IssueDetails = () => {
 					← {t('backToDashboard')}
 				</Link>
 
-				<button
-					onClick={handleResolveClick}
-					disabled={isDeleting}
-					style={{
-						background: '#fee2e2',
-						color: '#b91c1c',
-						border: '1px solid #fca5a5',
-						padding: '0.5rem 1rem',
-						borderRadius: 'var(--radius-sm)',
-						fontWeight: '600',
-						cursor: 'pointer'
-					}}
-				>
-					{isDeleting ? t('closing') : t('markResolved')}
-				</button>
+				{session && (
+					<button
+						onClick={handleResolveClick}
+						disabled={isDeleting}
+						style={{
+							background: '#fee2e2',
+							color: '#b91c1c',
+							border: '1px solid #fca5a5',
+							padding: '0.5rem 1rem',
+							borderRadius: 'var(--radius-sm)',
+							fontWeight: '600',
+							cursor: 'pointer'
+						}}
+					>
+						{isDeleting ? t('closing') : t('markResolved')}
+					</button>
+				)}
 			</div>
 
 			<div
@@ -268,14 +278,16 @@ const IssueDetails = () => {
 								<h3 className="section-title" style={{ marginBottom: 0 }}>
 									{t('documents')}
 								</h3>
-								<label className="upload-btn">
-									{t('addDocument')}
-									<input
-										type="file"
-										onChange={handleFileUpload}
-										style={{ display: 'none' }}
-									/>
-								</label>
+								{session && (
+									<label className="upload-btn">
+										{t('addDocument')}
+										<input
+											type="file"
+											onChange={handleFileUpload}
+											style={{ display: 'none' }}
+										/>
+									</label>
+								)}
 							</div>
 
 							<div className="attachments-list">

@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import IssueCard from '../components/IssueCard';
 // Import the initialized client
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
 	const { t } = useLanguage();
+	const { session } = useAuth();
+	const navigate = useNavigate();
+
 	const [issues, setIssues] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -34,6 +38,16 @@ const Dashboard = () => {
 		}
 	}
 
+	const handleReportClick = (e) => {
+		e.preventDefault();
+		if (!session) {
+			// Redirect to Login if not authenticated
+			navigate('/login');
+		} else {
+			navigate('/report');
+		}
+	};
+
 	return (
 		<div className="container app-main">
 			<div
@@ -56,13 +70,21 @@ const Dashboard = () => {
 						{t('dashboardSubtitle')}
 					</p>
 				</div>
-				<Link
-					to="/report"
+
+				{/* Changed Link to a styled button or handled Link click to intercept */}
+				<button
+					onClick={handleReportClick}
 					className="primary-btn"
-					style={{ textDecoration: 'none' }}
+					style={{
+						textDecoration: 'none',
+						border: 'none',
+						cursor: 'pointer',
+						fontFamily: 'inherit',
+						fontSize: '1rem'
+					}}
 				>
 					{t('reportIssueBtn')}
-				</Link>
+				</button>
 			</div>
 
 			{loading && (

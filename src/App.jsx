@@ -4,23 +4,28 @@ import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import IssueDetails from './pages/IssueDetails';
 import ReportIssue from './pages/ReportIssue';
+import Login from './pages/Login';
 import { LanguageProvider } from './context/LanguageContext';
+import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
 function App() {
 	return (
-		<LanguageProvider>
-			<Router>
-				<div className="app-container">
-					<Navbar />
-					<Routes>
-						<Route path="/" element={<Dashboard />} />
-						<Route path="/issue/:id" element={<IssueDetails />} />
-						<Route path="/report" element={<ReportIssue />} />
-					</Routes>
-				</div>
-			</Router>
-		</LanguageProvider>
+		<AuthProvider>
+			<LanguageProvider>
+				<Router>
+					<div className="app-container">
+						<Navbar />
+						<Routes>
+							<Route path="/" element={<Dashboard />} />
+							<Route path="/issue/:id" element={<IssueDetails />} />
+							<Route path="/report" element={<ReportIssue />} />
+							<Route path="/login" element={<Login />} />
+						</Routes>
+					</div>
+				</Router>
+			</LanguageProvider>
+		</AuthProvider>
 	);
 }
 
