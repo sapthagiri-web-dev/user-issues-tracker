@@ -306,10 +306,7 @@ const IssueDetails = () => {
 				)}
 			</div>
 
-			<div
-				className="glass-panel issue-details-container"
-				style={{ padding: '2rem' }}
-			>
+			<div className="glass-panel issue-details-container">
 				<div
 					style={{
 						display: 'flex',
@@ -320,7 +317,9 @@ const IssueDetails = () => {
 						gap: '1rem'
 					}}
 				>
-					<h1 style={{ fontSize: '2rem', flex: 1 }}>{issue.title}</h1>
+					<h1 className="issue-title" style={{ flex: 1 }}>
+						{issue.title}
+					</h1>
 					<span
 						className="status-badge"
 						data-status={issue.status}
@@ -346,14 +345,7 @@ const IssueDetails = () => {
 						</section>
 
 						<section className="detail-section">
-							<div
-								style={{
-									display: 'flex',
-									justifyContent: 'space-between',
-									alignItems: 'center',
-									marginBottom: '1rem'
-								}}
-							>
+							<div className="documents-header">
 								<h3 className="section-title" style={{ marginBottom: 0 }}>
 									{t('documents')}
 								</h3>
