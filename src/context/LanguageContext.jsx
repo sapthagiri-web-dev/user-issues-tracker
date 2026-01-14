@@ -61,7 +61,14 @@ export const translations = {
 		deleteAttachmentTitle: 'Delete Document?',
 		deleteAttachmentMessage:
 			'Are you sure you want to delete this document? This cannot be undone.',
-		deleteAttachmentConfirm: 'Delete'
+		deleteAttachmentConfirm: 'Delete',
+
+		// Search & Edit
+		searchPlaceholder: 'Search issues...',
+		editIssue: 'Edit Issue',
+		saveChanges: 'Save Changes',
+		cancel: 'Cancel',
+		updateSuccess: 'Issue updated successfully!'
 	},
 	kn: {
 		appTitle: 'ಕೆ.ಆರ್.ಎಸ್ ಗ್ರಾಮ ಸೇವೆ',
@@ -121,7 +128,14 @@ export const translations = {
 		deleteAttachmentTitle: 'ದಾಖಲೆ ಅಳಿಸುವುದೇ?',
 		deleteAttachmentMessage:
 			'ಈ ದಾಖಲೆಯನ್ನು ಅಳಿಸಲು ನೀವು ಖಚಿತವಾಗಿದ್ದೀರಾ? ಇದನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗುವುದಿಲ್ಲ.',
-		deleteAttachmentConfirm: 'ಅಳಿಸಿ'
+		deleteAttachmentConfirm: 'ಅಳಿಸಿ',
+
+		// Search & Edit
+		searchPlaceholder: 'ಹುಡುಕಿ...',
+		editIssue: 'ದೂರು ತಿದ್ದುಪಡಿ',
+		saveChanges: 'ಉಳಿಸಿ',
+		cancel: 'ರದ್ದುಮಾಡಿ',
+		updateSuccess: 'ದೂರು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ!'
 	}
 };
 

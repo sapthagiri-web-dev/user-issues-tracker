@@ -19,6 +19,15 @@ const IssueDetails = () => {
 	const [isDeletingIssue, setIsDeletingIssue] = useState(false);
 	const [isDeletingAttachment, setIsDeletingAttachment] = useState(false);
 
+	// Edit Mode State
+	const [isEditing, setIsEditing] = useState(false);
+	const [editForm, setEditForm] = useState({
+		title: '',
+		description: '',
+		location: ''
+	});
+	const [isSaving, setIsSaving] = useState(false);
+
 	// Modal State handling
 	const [modalType, setModalType] = useState(null); // 'RESOLVE' or 'DELETE_ATTACHMENT'
 	const [attachmentToDelete, setAttachmentToDelete] = useState(null);
@@ -34,6 +43,11 @@ const IssueDetails = () => {
 
 				if (error) throw error;
 				setIssue(data);
+				setEditForm({
+					title: data.title,
+					description: data.description,
+					location: data.location
+				});
 			} catch (error) {
 				console.error('Error fetching issue:', error);
 			} finally {
@@ -112,6 +126,35 @@ const IssueDetails = () => {
 		}
 	};
 
+	// --- Edit Handlers ---
+	const handleEditChange = (e) => {
+		setEditForm({ ...editForm, [e.target.name]: e.target.value });
+	};
+
+	const saveEdit = async () => {
+		setIsSaving(true);
+		try {
+			const { error } = await supabase
+				.from('issues')
+				.update({
+					title: editForm.title,
+					description: editForm.description,
+					location: editForm.location
+				})
+				.eq('id', id);
+
+			if (error) throw error;
+
+			setIssue({ ...issue, ...editForm });
+			setIsEditing(false);
+			alert(t('updateSuccess'));
+		} catch (error) {
+			alert('Error updating issue: ' + error.message);
+		} finally {
+			setIsSaving(false);
+		}
+	};
+
 	// --- Deletion Handlers ---
 
 	const initiateResolve = () => {
@@ -170,20 +213,6 @@ const IssueDetails = () => {
 
 		setIsDeletingAttachment(true);
 		try {
-			// 1. Delete from Storage
-			// Extract filename from URL or just use stored name if consistent
-			// The structure we used was IssueID/Filename.
-			// But our DB has file_url. We need to reconstruct the path or name.
-			// Actually, we uploaded as `${id}/${fileName}`.
-			// Wait, 'file_name' in DB is original name?
-			// In handleFileUpload: `filePath = ${id}/${fileName}`
-			// We stored `file.name` in DB as `file_name`. The unique name was `fileName`.
-			// CRITICAL FIX: We need the actual storage path to delete.
-			// Option A: Parse it from publicUrl if possible.
-			// Option B: Store storage_path in DB.
-
-			// Let's rely on listing method or parsing URL.
-			// publicUrl format: .../issue-attachments/issueId/filename
 			const urlParts = attachmentToDelete.file_url.split('/issue-attachments/');
 			if (urlParts.length < 2) throw new Error('Invalid file URL format');
 
@@ -195,7 +224,6 @@ const IssueDetails = () => {
 
 			if (storageError) throw storageError;
 
-			// 2. Delete from DB
 			const { error: dbError } = await supabase
 				.from('attachments')
 				.delete()
@@ -203,7 +231,6 @@ const IssueDetails = () => {
 
 			if (dbError) throw dbError;
 
-			// 3. Update UI
 			setAttachments((prev) => prev.filter((a) => a.id !== attachmentToDelete.id));
 		} catch (error) {
 			alert('Error deleting document: ' + error.message);
@@ -287,23 +314,54 @@ const IssueDetails = () => {
 					← {t('backToDashboard')}
 				</Link>
 
-				{session && (
-					<button
-						onClick={initiateResolve}
-						disabled={isDeletingIssue}
-						style={{
-							background: '#fee2e2',
-							color: '#b91c1c',
-							border: '1px solid #fca5a5',
-							padding: '0.5rem 1rem',
-							borderRadius: 'var(--radius-sm)',
-							fontWeight: '600',
-							cursor: 'pointer'
-						}}
-					>
-						{isDeletingIssue ? t('closing') : t('markResolved')}
-					</button>
-				)}
+				<div style={{ display: 'flex', gap: '1rem' }}>
+					{/* Edit Button */}
+					{session && !isEditing && (
+						<button onClick={() => setIsEditing(true)} className="secondary-btn">
+							✎ {t('editIssue')}
+						</button>
+					)}
+
+					{/* Resolve Button */}
+					{session && !isEditing && (
+						<button
+							onClick={initiateResolve}
+							disabled={isDeletingIssue}
+							style={{
+								background: '#fee2e2',
+								color: '#b91c1c',
+								border: '1px solid #fca5a5',
+								padding: '0.5rem 1rem',
+								borderRadius: 'var(--radius-sm)',
+								fontWeight: '600',
+								cursor: 'pointer'
+							}}
+						>
+							{isDeletingIssue ? t('closing') : t('markResolved')}
+						</button>
+					)}
+
+					{/* Editing Controls */}
+					{isEditing && (
+						<div style={{ display: 'flex', gap: '0.5rem' }}>
+							<button
+								onClick={() => setIsEditing(false)}
+								className="secondary-btn"
+								disabled={isSaving}
+							>
+								{t('cancel')}
+							</button>
+							<button
+								onClick={saveEdit}
+								className="primary-btn"
+								disabled={isSaving}
+								style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+							>
+								{isSaving ? t('submitting') : t('saveChanges')}
+							</button>
+						</div>
+					)}
+				</div>
 			</div>
 
 			<div className="glass-panel issue-details-container">
@@ -317,9 +375,26 @@ const IssueDetails = () => {
 						gap: '1rem'
 					}}
 				>
-					<h1 className="issue-title" style={{ flex: 1 }}>
-						{issue.title}
-					</h1>
+					{isEditing ? (
+						<input
+							type="text"
+							name="title"
+							value={editForm.title}
+							onChange={handleEditChange}
+							className="issue-title"
+							style={{
+								flex: 1,
+								padding: '0.5rem',
+								borderRadius: '4px',
+								border: '1px solid #ccc'
+							}}
+						/>
+					) : (
+						<h1 className="issue-title" style={{ flex: 1 }}>
+							{issue.title}
+						</h1>
+					)}
+
 					<span
 						className="status-badge"
 						data-status={issue.status}
@@ -331,17 +406,50 @@ const IssueDetails = () => {
 
 				<div className="details-layout">
 					<div className="details-main">
-						{/* ... Description Description ... */}
+						{/* ... Description ... */}
 						<section className="detail-section">
 							<h3 className="section-title">{t('description')}</h3>
-							<p className="section-content">
-								{issue.description || 'No description provided.'}
-							</p>
+							{isEditing ? (
+								<textarea
+									name="description"
+									value={editForm.description}
+									onChange={handleEditChange}
+									rows={5}
+									style={{
+										width: '100%',
+										padding: '0.5rem',
+										borderRadius: '4px',
+										border: '1px solid #ccc',
+										fontSize: '1rem',
+										fontFamily: 'inherit'
+									}}
+								/>
+							) : (
+								<p className="section-content">
+									{issue.description || 'No description provided.'}
+								</p>
+							)}
 						</section>
 
 						<section className="detail-section">
 							<h3 className="section-title">{t('location')}</h3>
-							<p className="section-content">{issue.location || t('unknown')}</p>
+							{isEditing ? (
+								<input
+									type="text"
+									name="location"
+									value={editForm.location}
+									onChange={handleEditChange}
+									style={{
+										width: '100%',
+										padding: '0.5rem',
+										borderRadius: '4px',
+										border: '1px solid #ccc',
+										fontSize: '1rem'
+									}}
+								/>
+							) : (
+								<p className="section-content">{issue.location || t('unknown')}</p>
+							)}
 						</section>
 
 						<section className="detail-section">
@@ -349,7 +457,7 @@ const IssueDetails = () => {
 								<h3 className="section-title" style={{ marginBottom: 0 }}>
 									{t('documents')}
 								</h3>
-								{session && (
+								{session && !isEditing && (
 									<label className="upload-btn">
 										{t('addDocument')}
 										<input
@@ -387,7 +495,7 @@ const IssueDetails = () => {
 													⬇
 												</a>
 											)}
-											{session && (
+											{session && !isEditing && (
 												<button
 													onClick={() => initiateDeleteAttachment(file)}
 													className="delete-btn"
