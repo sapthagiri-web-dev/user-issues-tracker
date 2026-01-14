@@ -31,6 +31,7 @@ const IssueCard = ({
 	const { t } = useLanguage();
 
 	// Calculate Days Pending
+
 	const calculateDaysPending = (dateString) => {
 		if (!dateString) return 0;
 		const reported = new Date(dateString);
