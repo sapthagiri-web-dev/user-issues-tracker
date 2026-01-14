@@ -261,3 +261,87 @@
 		transform: rotate(360deg);
 	}
 }
+
+/* Modal Styles */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 2000;
+	backdrop-filter: blur(4px);
+}
+
+.modal-content {
+	background: white;
+	padding: 2rem;
+	border-radius: var(--radius-md);
+	width: 90%;
+	max-width: 400px;
+	box-shadow: var(--shadow-lg);
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	animation: modalPop 0.2s ease-out;
+}
+
+@keyframes modalPop {
+	from {
+		transform: scale(0.95);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+.modal-title {
+	font-size: 1.25rem;
+	color: hsl(var(--color-text-primary));
+	font-weight: 700;
+}
+
+.modal-message {
+	color: hsl(var(--color-text-secondary));
+	line-height: 1.5;
+}
+
+.modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 1rem;
+	margin-top: 0.5rem;
+}
+
+.secondary-btn {
+	background: transparent;
+	border: 1px solid hsl(var(--color-text-muted) / 0.3);
+	color: hsl(var(--color-text-secondary));
+	padding: 0.5rem 1rem;
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	font-weight: 600;
+	transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+	background: hsl(var(--color-bg-base));
+	color: hsl(var(--color-text-primary));
+}
+
+.danger-btn {
+	background: #dc2626;
+	color: white;
+	box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3);
+}
+
+.danger-btn:hover {
+	background: #b91c1c;
+	transform: translateY(-1px);
+}

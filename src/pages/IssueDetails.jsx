@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const IssueDetails = () => {
 	const { id } = useParams();
+	const navigate = useNavigate();
 
 	const [issue, setIssue] = useState(null);
 	const [attachments, setAttachments] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [isUploading, setIsUploading] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
+
+	// Modal State
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	useEffect(() => {
 		fetchIssueDetails();
@@ -28,8 +34,6 @@ const IssueDetails = () => {
 		} catch (error) {
 			console.error('Error fetching issue:', error);
 		} finally {
-			// We will keep loading true until both finish, or handle fine-grained
-			// For simplicity, just letting this run separate
 			setLoading(false);
 		}
 	}
@@ -98,6 +102,49 @@ const IssueDetails = () => {
 		}
 	};
 
+	const handleResolveClick = () => {
+		setIsModalOpen(true);
+	};
+
+	const handleConfirmResolve = async () => {
+		setIsModalOpen(false);
+		setIsDeleting(true);
+		try {
+			// 1. List files in the issue's folder
+			const { data: files, error: listError } = await supabase.storage
+				.from('issue-attachments')
+				.list(`${id}/`);
+
+			if (listError)
+				console.warn('Error listing files (might be empty):', listError);
+
+			// 2. Delete files from storage if any exist
+			if (files && files.length > 0) {
+				const filesToRemove = files.map((x) => `${id}/${x.name}`);
+				const { error: removeError } = await supabase.storage
+					.from('issue-attachments')
+					.remove(filesToRemove);
+
+				if (removeError) throw removeError;
+			}
+
+			// 3. Delete Issue
+			const { error: deleteError } = await supabase
+				.from('issues')
+				.delete()
+				.eq('id', id);
+
+			if (deleteError) throw deleteError;
+
+			navigate('/');
+		} catch (error) {
+			alert('Error deleting issue: ' + error.message);
+			console.error(error);
+		} finally {
+			setIsDeleting(false);
+		}
+	};
+
 	if (loading)
 		return <div className="container app-main">Loading details...</div>;
 
@@ -122,19 +169,43 @@ const IssueDetails = () => {
 
 	return (
 		<div className="container app-main">
-			<Link
-				to="/"
+			<div
 				style={{
-					display: 'inline-flex',
+					display: 'flex',
+					justifyContent: 'space-between',
 					alignItems: 'center',
-					gap: '0.5rem',
-					marginBottom: '2rem',
-					color: 'hsl(var(--color-primary))',
-					textDecoration: 'none'
+					marginBottom: '2rem'
 				}}
 			>
-				← Back to Dashboard
-			</Link>
+				<Link
+					to="/"
+					style={{
+						display: 'inline-flex',
+						alignItems: 'center',
+						gap: '0.5rem',
+						color: 'hsl(var(--color-primary))',
+						textDecoration: 'none'
+					}}
+				>
+					← Back to Dashboard
+				</Link>
+
+				<button
+					onClick={handleResolveClick}
+					disabled={isDeleting}
+					style={{
+						background: '#fee2e2',
+						color: '#b91c1c',
+						border: '1px solid #fca5a5',
+						padding: '0.5rem 1rem',
+						borderRadius: 'var(--radius-sm)',
+						fontWeight: '600',
+						cursor: 'pointer'
+					}}
+				>
+					{isDeleting ? 'Closing...' : '✓ Mark Resolved'}
+				</button>
+			</div>
 
 			<div
 				className="glass-panel issue-details-container"
@@ -257,6 +328,16 @@ const IssueDetails = () => {
 					</div>
 				</div>
 			</div>
+
+			<ConfirmationModal
+				isOpen={isModalOpen}
+				title="Resolve Issue?"
+				message="Are you sure you want to mark this as resolved? This will permanently delete the issue and all attached documents. This action cannot be undone."
+				confirmText="Yes, Resolve & Delete"
+				isDangerous={true}
+				onConfirm={handleConfirmResolve}
+				onCancel={() => setIsModalOpen(false)}
+			/>
 		</div>
 	);
 };
