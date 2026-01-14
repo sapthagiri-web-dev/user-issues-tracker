@@ -114,10 +114,16 @@ export const translations = {
 };
 
 export const LanguageProvider = ({ children }) => {
-	const [language, setLanguage] = useState('en'); // Default to English
+	const [language, setLanguage] = useState(() => {
+		return localStorage.getItem('language') || 'en';
+	});
 
 	const toggleLanguage = () => {
-		setLanguage((prev) => (prev === 'en' ? 'kn' : 'en'));
+		setLanguage((prev) => {
+			const newLang = prev === 'en' ? 'kn' : 'en';
+			localStorage.setItem('language', newLang);
+			return newLang;
+		});
 	};
 
 	const t = (key) => {
