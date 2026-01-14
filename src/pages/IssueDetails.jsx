@@ -17,39 +17,41 @@ const IssueDetails = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	useEffect(() => {
-		fetchIssueDetails();
-		fetchAttachments();
+		async function fetchIssueDetails() {
+			try {
+				const { data, error } = await supabase
+					.from('issues')
+					.select('*')
+					.eq('id', id)
+					.single();
+
+				if (error) throw error;
+				setIssue(data);
+			} catch (error) {
+				console.error('Error fetching issue:', error);
+			} finally {
+				setLoading(false);
+			}
+		}
+
+		async function fetchAttachments() {
+			try {
+				const { data, error } = await supabase
+					.from('attachments')
+					.select('*')
+					.eq('issue_id', id);
+				if (error) throw error;
+				setAttachments(data || []);
+			} catch (error) {
+				console.error('Error fetching attachments:', error);
+			}
+		}
+
+		if (id) {
+			fetchIssueDetails();
+			fetchAttachments();
+		}
 	}, [id]);
-
-	async function fetchIssueDetails() {
-		try {
-			const { data, error } = await supabase
-				.from('issues')
-				.select('*')
-				.eq('id', id)
-				.single();
-
-			if (error) throw error;
-			setIssue(data);
-		} catch (error) {
-			console.error('Error fetching issue:', error);
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	async function fetchAttachments() {
-		try {
-			const { data, error } = await supabase
-				.from('attachments')
-				.select('*')
-				.eq('issue_id', id);
-			if (error) throw error;
-			setAttachments(data || []);
-		} catch (error) {
-			console.error('Error fetching attachments:', error);
-		}
-	}
 
 	// File Upload Handling
 	const handleFileUpload = async (e) => {

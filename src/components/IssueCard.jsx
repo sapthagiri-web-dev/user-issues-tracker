@@ -4,11 +4,13 @@ import './IssueCard.css';
 
 const Avatar = ({ name, role }) => {
 	const initials = name
-		.split(' ')
-		.map((n) => n[0])
-		.join('')
-		.toUpperCase()
-		.slice(0, 2);
+		? name
+				.split(' ')
+				.map((n) => n[0])
+				.join('')
+				.toUpperCase()
+				.slice(0, 2)
+		: '?';
 
 	return (
 		<div className={`avatar avatar-${role}`} title={`${name} (${role})`}>
@@ -17,15 +19,62 @@ const Avatar = ({ name, role }) => {
 	);
 };
 
-// Renamed props internally to context but mapped from passed props
-const IssueCard = ({ id, title, affectedUser, creator, status = 'Open' }) => {
+const IssueCard = ({
+	id,
+	title,
+	affectedUser,
+	creator,
+	status = 'Open',
+	dateReported
+}) => {
+	// Calculate Days Pending
+	const calculateDaysPending = (dateString) => {
+		if (!dateString) return 0;
+		const reported = new Date(dateString);
+		const now = new Date();
+		const diffTime = Math.abs(now - reported);
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+		return diffDays;
+	};
+
+	const daysPending = calculateDaysPending(dateReported);
+	const formattedDate = dateReported
+		? new Date(dateReported).toLocaleDateString()
+		: 'Unknown';
+
 	return (
 		<div className="glass-panel issue-card">
 			<div className="card-header">
-				<div className="status-badge" data-status={status}>
-					{status}
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'flex-start',
+						width: '100%'
+					}}
+				>
+					<div className="status-badge" data-status={status}>
+						{status}
+					</div>
+					{status === 'Open' && (
+						<span className="pending-badge" title="Days since reported">
+							⏱ {daysPending} days ago
+						</span>
+					)}
 				</div>
-				<h3 className="issue-title">{title}</h3>
+				<h3 className="issue-title" style={{ marginTop: '0.75rem' }}>
+					{title}
+				</h3>
+				<div
+					className="issue-date"
+					style={{
+						fontSize: '0.85rem',
+						color: 'hsl(var(--color-text-muted))',
+						marginTop: '0.25rem'
+					}}
+				>
+					Reported on: {formattedDate}
+				</div>
 			</div>
 
 			<div className="card-body">
@@ -33,7 +82,7 @@ const IssueCard = ({ id, title, affectedUser, creator, status = 'Open' }) => {
 					<span className="label">Resident / Grama Vasi:</span>
 					<div className="user-info">
 						<Avatar name={affectedUser} role="affected" />
-						<span className="user-name">{affectedUser}</span>
+						<span className="user-name">{affectedUser || 'Unknown'}</span>
 					</div>
 				</div>
 
@@ -41,7 +90,7 @@ const IssueCard = ({ id, title, affectedUser, creator, status = 'Open' }) => {
 					<span className="label">Official / Karyakarta:</span>
 					<div className="user-info">
 						<Avatar name={creator} role="creator" />
-						<span className="user-name">{creator}</span>
+						<span className="user-name">{creator || 'Unknown'}</span>
 					</div>
 				</div>
 			</div>

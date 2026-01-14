@@ -98,6 +98,7 @@ const Dashboard = () => {
 						affectedUser={issue.affected_user}
 						creator={issue.creator}
 						status={issue.status}
+						dateReported={issue.date_reported || issue.created_at}
 					/>
 				))}
 			</div>
