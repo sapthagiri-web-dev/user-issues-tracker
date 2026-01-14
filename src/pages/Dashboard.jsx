@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import IssueCard from '../components/IssueCard';
 // Import the initialized client
 import { supabase } from '../supabaseClient';
@@ -53,7 +54,13 @@ const Dashboard = () => {
 						Reporting issues for our village development
 					</p>
 				</div>
-				<button className="primary-btn">+ Report Issue</button>
+				<Link
+					to="/report"
+					className="primary-btn"
+					style={{ textDecoration: 'none' }}
+				>
+					+ Report Issue
+				</Link>
 			</div>
 
 			{loading && (

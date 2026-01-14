@@ -1,0 +1,72 @@
+.form-container {
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 2.5rem;
+	background-color: white; /* Clean paper look */
+}
+
+.issue-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.form-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+	.form-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+label {
+	font-weight: 600;
+	color: hsl(var(--color-text-secondary));
+	font-size: 0.95rem;
+}
+
+input,
+textarea {
+	padding: 0.75rem 1rem;
+	border-radius: var(--radius-sm);
+	border: 1px solid hsl(var(--color-text-muted) / 0.3);
+	font-family: inherit;
+	font-size: 1rem;
+	transition: all 0.2s;
+	background-color: hsl(var(--color-bg-base));
+}
+
+input:focus,
+textarea:focus {
+	outline: none;
+	border-color: hsl(var(--color-primary));
+	box-shadow: 0 0 0 3px hsl(var(--color-primary) / 0.1);
+	background-color: white;
+}
+
+.error-banner {
+	background-color: #fee2e2;
+	color: #b91c1c;
+	padding: 1rem;
+	border-radius: var(--radius-sm);
+	margin-bottom: 2rem;
+	border: 1px solid #fca5a5;
+	font-weight: 500;
+}
+
+.submit-btn {
+	margin-top: 1rem;
+	width: fit-content;
+	align-self: flex-end;
+	font-size: 1rem;
+}
