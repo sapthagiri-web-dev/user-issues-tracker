@@ -99,7 +99,8 @@
 
 @media (max-width: 768px) {
 	.details-layout {
-		grid-template-columns: 1fr;
+		display: flex;
+		flex-direction: column;
 		gap: 2rem;
 	}
 }
@@ -170,6 +171,7 @@
 	.details-sidebar {
 		padding: 1.25rem;
 		gap: 1.5rem;
+		order: -1;
 	}
 }
 

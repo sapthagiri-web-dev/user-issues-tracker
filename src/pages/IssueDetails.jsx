@@ -19,6 +19,11 @@ const IssueDetails = () => {
 	const [isDeletingIssue, setIsDeletingIssue] = useState(false);
 	const [isDeletingAttachment, setIsDeletingAttachment] = useState(false);
 
+	// Comments State
+	const [comments, setComments] = useState([]);
+	const [newComment, setNewComment] = useState('');
+	const [isPostingComment, setIsPostingComment] = useState(false);
+
 	// Edit Mode State
 	const [isEditing, setIsEditing] = useState(false);
 	const [editForm, setEditForm] = useState({
@@ -68,9 +73,25 @@ const IssueDetails = () => {
 			}
 		}
 
+		async function fetchComments() {
+			try {
+				const { data, error } = await supabase
+					.from('comments')
+					.select('*')
+					.eq('issue_id', id)
+					.order('created_at', { ascending: true });
+
+				if (error) throw error;
+				setComments(data || []);
+			} catch (error) {
+				console.error('Error fetching comments:', error);
+			}
+		}
+
 		if (id) {
 			fetchIssueDetails();
 			fetchAttachments();
+			fetchComments();
 		}
 	}, [id]);
 
@@ -237,6 +258,37 @@ const IssueDetails = () => {
 			console.error(error);
 		} finally {
 			setIsDeletingAttachment(false);
+		}
+	};
+
+	// --- Comment Handlers ---
+	const handlePostComment = async (e) => {
+		e.preventDefault();
+		if (!newComment.trim()) return;
+		if (!session) return;
+
+		setIsPostingComment(true);
+		try {
+			const { data, error } = await supabase
+				.from('comments')
+				.insert([
+					{
+						issue_id: id,
+						user_email: session.user.email,
+						content: newComment.trim()
+					}
+				])
+				.select()
+				.single();
+
+			if (error) throw error;
+
+			setComments([...comments, data]);
+			setNewComment('');
+		} catch (error) {
+			alert('Error posting comment: ' + error.message);
+		} finally {
+			setIsPostingComment(false);
 		}
 	};
 
@@ -522,6 +574,113 @@ const IssueDetails = () => {
 									</div>
 								)}
 							</div>
+						</section>
+
+						{/* Comments Section */}
+						<section className="detail-section">
+							<h3 className="section-title">{t('comments') || 'Comments'}</h3>
+
+							<div
+								className="comments-list"
+								style={{
+									marginBottom: '1.5rem',
+									display: 'flex',
+									flexDirection: 'column',
+									gap: '1rem'
+								}}
+							>
+								{comments.length === 0 && (
+									<div className="empty-state">
+										{t('noComments') || 'No comments yet.'}
+									</div>
+								)}
+								{comments.map((comment) => (
+									<div
+										key={comment.id}
+										className="comment-item"
+										style={{
+											padding: '1rem',
+											background: 'rgba(255, 255, 255, 0.5)',
+											borderRadius: 'var(--radius-sm)',
+											border: '1px solid var(--border-color)'
+										}}
+									>
+										<div
+											className="comment-header"
+											style={{
+												display: 'flex',
+												justifyContent: 'space-between',
+												marginBottom: '0.5rem',
+												fontSize: '0.9rem',
+												color: '#666'
+											}}
+										>
+											<span className="comment-author" style={{ fontWeight: '600' }}>
+												{comment.user_email?.split('@')[0] || 'User'}
+											</span>
+											<span className="comment-date">
+												{new Date(comment.created_at).toLocaleString()}
+											</span>
+										</div>
+										<p
+											className="comment-content"
+											style={{ margin: 0, whiteSpace: 'pre-wrap' }}
+										>
+											{comment.content}
+										</p>
+									</div>
+								))}
+							</div>
+
+							{session ? (
+								<form onSubmit={handlePostComment} className="comment-form">
+									<textarea
+										value={newComment}
+										onChange={(e) => setNewComment(e.target.value)}
+										placeholder={t('writeComment') || 'Write a comment...'}
+										rows={3}
+										style={{
+											width: '100%',
+											padding: '0.75rem',
+											borderRadius: 'var(--radius-sm)',
+											border: '1px solid var(--border-color)',
+											marginBottom: '0.5rem',
+											fontFamily: 'inherit'
+										}}
+									/>
+									<button
+										type="submit"
+										className="primary-btn"
+										disabled={isPostingComment || !newComment.trim()}
+										style={{
+											padding: '0.5rem 1rem',
+											fontSize: '0.9rem'
+										}}
+									>
+										{isPostingComment
+											? t('posting') || 'Posting...'
+											: t('postComment') || 'Post Comment'}
+									</button>
+								</form>
+							) : (
+								<div
+									className="login-prompt"
+									style={{
+										padding: '1rem',
+										background: '#f3f4f6',
+										borderRadius: 'var(--radius-sm)',
+										textAlign: 'center',
+										fontSize: '0.9rem',
+										color: '#666'
+									}}
+								>
+									Please{' '}
+									<Link to="/login" style={{ color: 'var(--color-primary)' }}>
+										login
+									</Link>{' '}
+									to post comments.
+								</div>
+							)}
 						</section>
 					</div>
 
