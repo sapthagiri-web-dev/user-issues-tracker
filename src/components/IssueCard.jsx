@@ -26,7 +26,9 @@ const IssueCard = ({
 	affectedUser,
 	creator,
 	status = 'Open',
-	dateReported
+	dateReported,
+	isExpanded,
+	onToggle
 }) => {
 	const { t } = useLanguage();
 
@@ -55,7 +57,11 @@ const IssueCard = ({
 	};
 
 	return (
-		<div className="glass-panel issue-card">
+		<div
+			className={`glass-panel issue-card ${isExpanded ? 'expanded' : ''}`}
+			onClick={onToggle}
+			style={{ cursor: 'pointer' }} // Visual cue
+		>
 			<div className="card-header">
 				<div
 					style={{
@@ -87,34 +93,48 @@ const IssueCard = ({
 				>
 					{t('reportedOn')}: {formattedDate}
 				</div>
-			</div>
 
-			<div className="card-body">
-				<div className="user-row">
-					<span className="label">{t('residentLabel')}:</span>
-					<div className="user-info">
-						<Avatar name={affectedUser} role="affected" />
-						<span className="user-name">{affectedUser || t('unknown')}</span>
-					</div>
-				</div>
-
-				<div className="user-row">
-					<span className="label">{t('officialLabel')}:</span>
-					<div className="user-info">
-						<Avatar name={creator} role="creator" />
-						<span className="user-name">{creator || t('unknown')}</span>
-					</div>
-				</div>
-			</div>
-
-			<div className="card-footer">
-				<Link
-					to={`/issue/${id}`}
-					className="action-btn"
-					style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
+				{/* Mobile Toggle Button */}
+				<button
+					className="mobile-expand-btn"
+					onClick={(e) => {
+						e.stopPropagation();
+						onToggle();
+					}}
+					aria-label={isExpanded ? 'Collapse' : 'Expand'}
 				>
-					{t('viewDetails')}
-				</Link>
+					{isExpanded ? '▲' : '▼'}
+				</button>
+			</div>
+
+			<div className="card-content-wrapper">
+				<div className="card-body">
+					<div className="user-row">
+						<span className="label">{t('residentLabel')}:</span>
+						<div className="user-info">
+							<Avatar name={affectedUser} role="affected" />
+							<span className="user-name">{affectedUser || t('unknown')}</span>
+						</div>
+					</div>
+
+					<div className="user-row">
+						<span className="label">{t('officialLabel')}:</span>
+						<div className="user-info">
+							<Avatar name={creator} role="creator" />
+							<span className="user-name">{creator || t('unknown')}</span>
+						</div>
+					</div>
+				</div>
+
+				<div className="card-footer" onClick={(e) => e.stopPropagation()}>
+					<Link
+						to={`/issue/${id}`}
+						className="action-btn"
+						style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
+					>
+						{t('viewDetails')}
+					</Link>
+				</div>
 			</div>
 		</div>
 	);

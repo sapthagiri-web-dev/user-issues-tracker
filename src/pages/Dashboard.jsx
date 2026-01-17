@@ -10,6 +10,7 @@ const Dashboard = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [searchTerm, setSearchTerm] = useState(''); // Search State
+	const [expandedIssueId, setExpandedIssueId] = useState(null); // Accordion State
 
 	const { t } = useLanguage();
 	const { session } = useAuth();
@@ -44,6 +45,10 @@ const Dashboard = () => {
 		} else {
 			navigate('/report');
 		}
+	};
+
+	const handleCardToggle = (id) => {
+		setExpandedIssueId((prevId) => (prevId === id ? null : id));
 	};
 
 	// Filter Issues
@@ -163,8 +168,8 @@ const Dashboard = () => {
 								creator={issue.creator}
 								status={issue.status}
 								dateReported={issue.date_reported || issue.created_at}
-								// Also passing full issue just in case I updated it previously?
-								// I'll stick to props I saw in the broken file's diff.
+								isExpanded={expandedIssueId === issue.id}
+								onToggle={() => handleCardToggle(issue.id)}
 							/>
 						))
 					)}

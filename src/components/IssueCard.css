@@ -3,6 +3,7 @@
 	flex-direction: column;
 	height: 100%;
 	transition: transform 0.2s, box-shadow 0.2s;
+	position: relative;
 }
 
 .issue-card:hover {
@@ -13,6 +14,7 @@
 .card-header {
 	padding: 1.5rem 1.5rem 1rem;
 	border-bottom: 1px solid hsl(var(--color-bg-highlight));
+	position: relative;
 }
 
 .issue-title {
@@ -149,4 +151,112 @@
 	background-color: hsl(var(--color-primary));
 	color: white;
 	border-color: hsl(var(--color-primary));
+}
+
+.mobile-expand-btn {
+	display: none;
+}
+
+/* Mobile Optimized Styles */
+@media (max-width: 768px) {
+	.issue-card {
+		overflow: hidden;
+	}
+
+	.mobile-expand-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: absolute;
+		top: 0.75rem;
+		right: 0.75rem;
+		width: 32px;
+		height: 32px;
+		background: transparent;
+		border: 1px solid hsl(var(--color-bg-highlight));
+		color: hsl(var(--color-text-muted));
+		border-radius: 50%;
+		cursor: pointer;
+		font-size: 0.8rem;
+		transition: all 0.2s;
+	}
+
+	.mobile-expand-btn:hover {
+		background: hsl(var(--color-bg-base));
+		color: hsl(var(--color-primary));
+	}
+
+	.card-content-wrapper {
+		display: grid;
+		grid-template-rows: 0fr;
+		transition: grid-template-rows 0.3s ease-out;
+	}
+
+	.issue-card.expanded .card-content-wrapper {
+		grid-template-rows: 1fr;
+	}
+
+	.card-content-wrapper > * {
+		overflow: hidden;
+	}
+
+	/* Or simpler display toggle if grid transition is too complex for now */
+	.card-content-wrapper {
+		display: none;
+	}
+
+	.issue-card.expanded .card-content-wrapper {
+		display: block;
+		animation: slideDown 0.3s ease-out;
+	}
+
+	@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.card-header {
+		border-bottom: none; /* Hide border when collapsed */
+	}
+
+	.issue-card.expanded .card-header {
+		border-bottom: 1px solid hsl(var(--color-bg-highlight));
+	}
+	/* Add padding to the header content to prevent overlap with button */
+	.card-header > div:first-child {
+		padding-right: 2.5rem;
+	}
+
+	.card-header {
+		padding: 0.75rem;
+	}
+
+	.card-body {
+		padding: 0.75rem;
+	}
+
+	.card-footer {
+		padding: 0.75rem;
+	}
+
+	.status-badge {
+		font-size: 0.7rem;
+		padding: 0.2rem 0.6rem;
+	}
+
+	.pending-badge {
+		font-size: 0.7rem;
+		padding: 0.2rem 0.4rem;
+	}
+
+	.issue-title {
+		font-size: 1rem;
+		font-weight: 600;
+	}
 }
