@@ -55,6 +55,9 @@ export const translations = {
 		issueTitle: 'Issue Title *',
 		issueDesc: 'Description',
 		issueLocation: 'Location',
+		selectVillage: 'Select Village *',
+		searchVillage: 'Search village...',
+		selectHobli: 'Select Hobli *',
 		residentName: 'Resident / Grama Vasi *',
 		reporterName: 'Reported By (Official) *',
 		submitReport: 'Submit Report',
@@ -139,6 +142,9 @@ export const translations = {
 		issueTitle: 'ಸಮಸ್ಯೆಯ ಶೀರ್ಷಿಕೆ *',
 		issueDesc: 'ವಿವರಣೆ',
 		issueLocation: 'ಸ್ಥಳ',
+		selectVillage: 'ಗ್ರಾಮ ಆಯ್ಕೆಮಾಡಿ *',
+		searchVillage: 'ಗ್ರಾಮ ಹುಡುಕಿ...',
+		selectHobli: 'ಹೋಬಳಿ ಆಯ್ಕೆಮಾಡಿ *',
 		residentName: 'ನಿವಾಸಿ / ಗ್ರಾಮವಾಸಿ *',
 		reporterName: 'ವರದಿಗಾರ (ಅಧಿಕಾರಿ) *',
 		submitReport: 'ದೂರು ಸಲ್ಲಿಸಿ',
@@ -174,6 +180,7 @@ export const translations = {
 };
 
 export const LanguageProvider = ({ children }) => {
+	console.log('hello');
 	const [language, setLanguage] = useState(() => {
 		return localStorage.getItem('language') || 'en';
 	});

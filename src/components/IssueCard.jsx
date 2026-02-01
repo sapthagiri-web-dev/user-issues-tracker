@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './IssueCard.css';
 import { useLanguage } from '../context/LanguageContext';
+import { localizeLocation } from '../data/villagesData';
 
 const Avatar = ({ name, role }) => {
 	const initials = name
@@ -25,12 +26,13 @@ const IssueCard = ({
 	title,
 	affectedUser,
 	creator,
+	location,
 	status = 'Open',
 	dateReported,
 	isExpanded,
 	onToggle
 }) => {
-	const { t } = useLanguage();
+	const { t, language } = useLanguage();
 
 	// Calculate Days Pending
 
@@ -60,6 +62,7 @@ const IssueCard = ({
 		<div
 			className={`glass-panel issue-card ${isExpanded ? 'expanded' : ''}`}
 			onClick={onToggle}
+			data-status={status}
 			style={{ cursor: 'pointer' }} // Visual cue
 		>
 			<div className="card-header">
@@ -74,12 +77,34 @@ const IssueCard = ({
 					<div className="status-badge" data-status={status}>
 						{getStatusLabel(status)}
 					</div>
-					{status === 'Open' && (
+					{status !== 'Resolved' && (
 						<span className="pending-badge" title="Days since reported">
 							⏱ {daysPending} {t('daysAgo')}
 						</span>
 					)}
 				</div>
+				{location && (
+					<div
+						style={{
+							marginTop: '0.75rem',
+							display: 'inline-flex',
+							alignItems: 'center',
+							gap: '0.35rem',
+							background: 'white',
+							border: '1px solid #e5e7eb',
+							color: '#374151',
+							padding: '0.25rem 0.75rem',
+							borderRadius: '9999px',
+							fontSize: '0.85rem',
+							fontWeight: '500',
+							width: 'fit-content',
+							boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+						}}
+					>
+						<span style={{ fontSize: '1rem', lineHeight: 1 }}>📍</span>
+						<span>{localizeLocation(location, language) || t('unknown')}</span>
+					</div>
+				)}
 				<h3 className="issue-title" style={{ marginTop: '0.75rem' }}>
 					{title}
 				</h3>

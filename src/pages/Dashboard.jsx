@@ -206,6 +206,7 @@ const Dashboard = () => {
 								title={issue.title}
 								affectedUser={issue.affected_user}
 								creator={issue.creator}
+								location={issue.location}
 								status={issue.status}
 								dateReported={issue.date_reported || issue.created_at}
 								isExpanded={expandedIssueId === issue.id}

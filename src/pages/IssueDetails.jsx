@@ -4,11 +4,21 @@ import { supabase } from '../supabaseClient';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import {
+	MAGADI_VILLAGES,
+	MAGADI_HOBLIS,
+	formatLocation,
+	extractVillageName,
+	extractHobliName,
+	getVillageName,
+	getHobliName,
+	localizeLocation
+} from '../data/villagesData';
 
 const IssueDetails = () => {
 	const { id } = useParams();
 	const navigate = useNavigate();
-	const { t } = useLanguage();
+	const { t, language } = useLanguage();
 	const { session } = useAuth();
 
 	const [issue, setIssue] = useState(null);
@@ -31,6 +41,8 @@ const IssueDetails = () => {
 		description: '',
 		location: ''
 	});
+	const [selectedVillage, setSelectedVillage] = useState('');
+	const [selectedHobli, setSelectedHobli] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
 
 	// Modal State handling
@@ -150,6 +162,68 @@ const IssueDetails = () => {
 	// --- Edit Handlers ---
 	const handleEditChange = (e) => {
 		setEditForm({ ...editForm, [e.target.name]: e.target.value });
+	};
+
+	// Handle village selection in edit mode
+	const handleEditVillageChange = (e) => {
+		const inputValue = e.target.value;
+		setSelectedVillage(inputValue);
+
+		// Find village match (en or kn)
+		const villageMatch = MAGADI_VILLAGES.find(
+			(v) => v.en.toLowerCase() === inputValue.toLowerCase() || v.kn === inputValue
+		);
+
+		if (villageMatch) {
+			const displayVillage = getVillageName(villageMatch, language);
+
+			// Resolve Hobli
+			let displayHobli = '';
+			if (selectedHobli) {
+				const hobliMatch = MAGADI_HOBLIS.find(
+					(h) => h.en === selectedHobli || h.kn === selectedHobli
+				);
+				if (hobliMatch) {
+					displayHobli = getHobliName(hobliMatch, language);
+				}
+			}
+
+			setEditForm({
+				...editForm,
+				location: formatLocation(displayVillage, displayHobli, language)
+			});
+		} else {
+			setEditForm({ ...editForm, location: inputValue });
+		}
+	};
+
+	// Handle hobli selection in edit mode
+	const handleEditHobliChange = (e) => {
+		const inputValue = e.target.value;
+		setSelectedHobli(inputValue);
+
+		if (selectedVillage) {
+			const villageMatch = MAGADI_VILLAGES.find(
+				(v) =>
+					v.en.toLowerCase() === selectedVillage.toLowerCase() ||
+					v.kn === selectedVillage
+			);
+			const displayVillage = villageMatch
+				? getVillageName(villageMatch, language)
+				: selectedVillage;
+
+			const hobliMatch = MAGADI_HOBLIS.find(
+				(h) => h.en === inputValue || h.kn === inputValue
+			);
+			const displayHobli = hobliMatch
+				? getHobliName(hobliMatch, language)
+				: inputValue;
+
+			setEditForm({
+				...editForm,
+				location: formatLocation(displayVillage, displayHobli, language)
+			});
+		}
 	};
 
 	const saveEdit = async () => {
@@ -502,21 +576,69 @@ const IssueDetails = () => {
 						<section className="detail-section">
 							<h3 className="section-title">{t('location')}</h3>
 							{isEditing ? (
-								<input
-									type="text"
-									name="location"
-									value={editForm.location}
-									onChange={handleEditChange}
-									style={{
-										width: '100%',
-										padding: '0.5rem',
-										borderRadius: '4px',
-										border: '1px solid #ccc',
-										fontSize: '1rem'
-									}}
-								/>
+								<div>
+									<div style={{ marginBottom: '1rem' }}>
+										<label style={{ display: 'block', marginBottom: '0.5rem' }}>
+											{t('selectVillage')}
+										</label>
+										<input
+											type="text"
+											value={extractVillageName(editForm.location) || selectedVillage}
+											onChange={handleEditVillageChange}
+											list="villages-list-edit"
+											placeholder={t('searchVillage')}
+											autoComplete="off"
+											style={{
+												width: '100%',
+												padding: '0.5rem',
+												borderRadius: '4px',
+												border: '1px solid #ccc',
+												fontSize: '1rem'
+											}}
+										/>
+										<datalist id="villages-list-edit">
+											{MAGADI_VILLAGES.map((village) => {
+												const val = getVillageName(village, language);
+												return <option key={village.en} value={val} />;
+											})}
+										</datalist>
+									</div>
+									<div style={{ marginBottom: '0.5rem' }}>
+										<label style={{ display: 'block', marginBottom: '0.5rem' }}>
+											{t('selectHobli')}
+										</label>
+										<select
+											value={extractHobliName(editForm.location) || selectedHobli}
+											onChange={handleEditHobliChange}
+											style={{
+												width: '100%',
+												padding: '0.5rem',
+												borderRadius: '4px',
+												border: '1px solid #ccc',
+												fontSize: '1rem'
+											}}
+										>
+											<option value="">{t('selectHobli')}</option>
+											{MAGADI_HOBLIS.map((hobli) => {
+												const val = getHobliName(hobli, language);
+												return (
+													<option key={hobli.en} value={val}>
+														{val}
+													</option>
+												);
+											})}
+										</select>
+									</div>
+									{editForm.location && (
+										<small style={{ color: 'hsl(var(--color-text-muted))' }}>
+											{editForm.location}
+										</small>
+									)}
+								</div>
 							) : (
-								<p className="section-content">{issue.location || t('unknown')}</p>
+								<p className="section-content">
+									{localizeLocation(issue.location, language) || t('unknown')}
+								</p>
 							)}
 						</section>
 

@@ -4,10 +4,19 @@ import { supabase } from '../supabaseClient';
 import './ReportIssue.css';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import {
+	MAGADI_VILLAGES,
+	MAGADI_HOBLIS,
+	formatLocation,
+	extractVillageName,
+	extractHobliName,
+	getVillageName,
+	getHobliName
+} from '../data/villagesData';
 
 const ReportIssue = () => {
 	const navigate = useNavigate();
-	const { t } = useLanguage();
+	const { t, language } = useLanguage();
 	const { session, loading: authLoading } = useAuth();
 
 	const [loading, setLoading] = useState(false);
@@ -22,6 +31,10 @@ const ReportIssue = () => {
 		status: 'Open'
 	});
 
+	// Separate state for village and hobli selection
+	const [selectedVillage, setSelectedVillage] = useState('');
+	const [selectedHobli, setSelectedHobli] = useState('');
+
 	useEffect(() => {
 		if (!authLoading && !session) {
 			navigate('/login');
@@ -29,10 +42,79 @@ const ReportIssue = () => {
 	}, [session, authLoading, navigate]);
 
 	const handleChange = (e) => {
+		const { name, value } = e.target;
 		setFormData({
 			...formData,
-			[e.target.name]: e.target.value
+			[name]: value
 		});
+	};
+
+	// Handle village selection and format location
+	const handleVillageChange = (e) => {
+		const inputValue = e.target.value;
+		setSelectedVillage(inputValue);
+
+		// Find village in either language
+		const villageMatch = MAGADI_VILLAGES.find(
+			(v) => v.en.toLowerCase() === inputValue.toLowerCase() || v.kn === inputValue
+		);
+
+		if (villageMatch) {
+			const displayVillage = getVillageName(villageMatch, language);
+
+			// If we have a selected hobli, find its localized name
+			let displayHobli = '';
+			if (selectedHobli) {
+				const hobliMatch = MAGADI_HOBLIS.find(
+					(h) => h.en === selectedHobli || h.kn === selectedHobli
+				);
+				if (hobliMatch) {
+					displayHobli = getHobliName(hobliMatch, language);
+				}
+			}
+
+			setFormData({
+				...formData,
+				location: formatLocation(displayVillage, displayHobli, language)
+			});
+		} else {
+			// Custom input or partial match - keep as is
+			setFormData({
+				...formData,
+				location: inputValue
+			});
+		}
+	};
+
+	// Handle hobli selection and update location
+	const handleHobliChange = (e) => {
+		const inputValue = e.target.value;
+		setSelectedHobli(inputValue);
+
+		if (selectedVillage) {
+			// Resolve Village Name (localized)
+			const villageMatch = MAGADI_VILLAGES.find(
+				(v) =>
+					v.en.toLowerCase() === selectedVillage.toLowerCase() ||
+					v.kn === selectedVillage
+			);
+			const displayVillage = villageMatch
+				? getVillageName(villageMatch, language)
+				: selectedVillage;
+
+			// Resolve Hobli Name (localized)
+			const hobliMatch = MAGADI_HOBLIS.find(
+				(h) => h.en === inputValue || h.kn === inputValue
+			);
+			const displayHobli = hobliMatch
+				? getHobliName(hobliMatch, language)
+				: inputValue;
+
+			setFormData({
+				...formData,
+				location: formatLocation(displayVillage, displayHobli, language)
+			});
+		}
 	};
 
 	const handleSubmit = async (e) => {
@@ -112,15 +194,65 @@ const ReportIssue = () => {
 					</div>
 
 					<div className="form-group">
-						<label htmlFor="location">{t('issueLocation')}</label>
+						<label htmlFor="location">{t('selectVillage')}</label>
 						<input
 							type="text"
 							id="location"
 							name="location"
-							value={formData.location}
-							onChange={handleChange}
-							placeholder={t('issueLocation')}
+							value={extractVillageName(formData.location) || formData.location}
+							onChange={handleVillageChange}
+							list="villages-list"
+							placeholder={t('searchVillage')}
+							required
+							autoComplete="off"
 						/>
+						<datalist id="villages-list">
+							{MAGADI_VILLAGES.map((village) => {
+								const val = getVillageName(village, language);
+								return <option key={village.en} value={val} />;
+							})}
+						</datalist>
+						{formData.location && (
+							<small
+								style={{
+									color: 'hsl(var(--color-text-muted))',
+									marginTop: '0.5rem',
+									display: 'block'
+								}}
+							>
+								{formData.location}
+							</small>
+						)}
+					</div>
+
+					<div className="form-group">
+						<label htmlFor="hobli">{t('selectHobli')}</label>
+						<select
+							id="hobli"
+							name="hobli"
+							value={selectedHobli}
+							onChange={handleHobliChange}
+							required
+							style={{
+								width: '100%',
+								padding: '0.75rem',
+								borderRadius: 'var(--radius-sm)',
+								border: '1px solid hsl(var(--color-primary) / 0.3)',
+								fontSize: '1rem',
+								background: 'hsl(var(--color-bg-secondary))',
+								color: 'hsl(var(--color-text))'
+							}}
+						>
+							<option value="">{t('selectHobli')}</option>
+							{MAGADI_HOBLIS.map((hobli) => {
+								const val = getHobliName(hobli, language);
+								return (
+									<option key={hobli.en} value={val}>
+										{val}
+									</option>
+								);
+							})}
+						</select>
 					</div>
 
 					<div className="form-row">
