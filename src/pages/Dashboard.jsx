@@ -4,6 +4,11 @@ import IssueCard from '../components/IssueCard';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import {
+	MAGADI_HOBLIS,
+	extractHobliName,
+	getHobliName
+} from '../data/villagesData';
 
 const Dashboard = () => {
 	const [issues, setIssues] = useState([]);
@@ -12,8 +17,9 @@ const Dashboard = () => {
 	const [searchTerm, setSearchTerm] = useState(''); // Search State
 	const [expandedIssueId, setExpandedIssueId] = useState(null); // Accordion State
 	const [statusFilter, setStatusFilter] = useState('All'); // Status Filter State
+	const [selectedHobli, setSelectedHobli] = useState(''); // Hobli Filter State
 
-	const { t } = useLanguage();
+	const { t, language } = useLanguage();
 	const { session } = useAuth();
 	const navigate = useNavigate();
 
@@ -62,7 +68,19 @@ const Dashboard = () => {
 		// Status filter
 		const statusMatch = statusFilter === 'All' || issue.status === statusFilter;
 
-		return searchMatch && statusMatch;
+		// Hobli filter
+		let hobliMatch = true;
+		if (selectedHobli) {
+			const issueHobliStr = extractHobliName(issue.location);
+			const hobliObj = MAGADI_HOBLIS.find(
+				(h) =>
+					h.en.toLowerCase() === issueHobliStr.toLowerCase() ||
+					h.kn === issueHobliStr
+			);
+			hobliMatch = hobliObj && hobliObj.en === selectedHobli;
+		}
+
+		return searchMatch && statusMatch && hobliMatch;
 	});
 
 	return (
@@ -113,6 +131,46 @@ const Dashboard = () => {
 							outline: 'none'
 						}}
 					/>
+				</div>
+
+				{/* Hobli Filter Dropdown */}
+				<div
+					className="hobli-filter-container"
+					style={{
+						maxWidth: '300px',
+						margin: '0 auto 2rem auto',
+						textAlign: 'center'
+					}}
+				>
+					<select
+						value={selectedHobli}
+						onChange={(e) => setSelectedHobli(e.target.value)}
+						style={{
+							width: '100%',
+							padding: '0.75rem',
+							borderRadius: '9999px',
+							border: '1px solid hsl(var(--color-bg-highlight))',
+							boxShadow: 'var(--shadow-sm)',
+							fontSize: '1rem',
+							backgroundColor: 'hsl(var(--color-bg-surface))',
+							color: 'hsl(var(--color-text-primary))',
+							cursor: 'pointer',
+							appearance: 'none',
+							backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+							backgroundRepeat: 'no-repeat',
+							backgroundPosition: 'right 1rem center',
+							backgroundSize: '1.2rem'
+						}}
+					>
+						<option value="">
+							{t('filterAllHoblis') || 'All Hoblis / ಎಲ್ಲಾ ಹೋಬಳಿಗಳು'}
+						</option>
+						{MAGADI_HOBLIS.map((hobli) => (
+							<option key={hobli.en} value={hobli.en}>
+								{getHobliName(hobli, language)}
+							</option>
+						))}
+					</select>
 				</div>
 
 				{/* Status Filter Tabs */}

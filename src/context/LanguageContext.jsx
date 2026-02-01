@@ -17,6 +17,7 @@ export const translations = {
 		filterOpen: 'Open',
 		filterInProgress: 'In Progress',
 		filterResolved: 'Resolved',
+		filterAllHoblis: 'All Hoblis',
 
 		// Issue Card
 		statusOpen: 'Open',
@@ -105,6 +106,7 @@ export const translations = {
 		filterOpen: 'ತೆರೆದಿದೆ',
 		filterInProgress: 'ಪ್ರಗತಿಯಲ್ಲಿದೆ',
 		filterResolved: 'ಪರಿಹರಿಸಲಾಗಿದೆ',
+		filterAllHoblis: 'ಎಲ್ಲಾ ಹೋಬಳಿಗಳು',
 
 		// Issue Card
 		statusOpen: 'ತೆರೆದಿದೆ',
