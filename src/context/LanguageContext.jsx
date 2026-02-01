@@ -37,6 +37,10 @@ export const translations = {
 		reportedBy: 'Reported By',
 		markResolved: '✓ Mark Resolved',
 		closing: 'Closing...',
+		moveToProgress: 'Move to In Progress',
+		updating: 'Updating...',
+		reopenIssue: 'Reopen Issue',
+		statusUpdated: 'Status updated successfully!',
 
 		// Report Page
 		reportNewIssue: 'Report New Issue',
@@ -68,7 +72,14 @@ export const translations = {
 		editIssue: 'Edit Issue',
 		saveChanges: 'Save Changes',
 		cancel: 'Cancel',
-		updateSuccess: 'Issue updated successfully!'
+		updateSuccess: 'Issue updated successfully!',
+
+		// Comments
+		comments: 'Comments',
+		noComments: 'No comments yet.',
+		writeComment: 'Write a comment...',
+		postComment: 'Post Comment',
+		posting: 'Posting...'
 	},
 	kn: {
 		appTitle: 'ಕೆ.ಆರ್.ಎಸ್ ಗ್ರಾಮ ಸೇವೆ',
@@ -105,6 +116,10 @@ export const translations = {
 		reportedBy: 'ವರದಿ ಮಾಡಿದವರು',
 		markResolved: '✓ ಪರಿಹರಿಸಲಾಗಿದೆ',
 		closing: 'ಮುಚ್ಚಲಾಗುತ್ತಿದೆ...',
+		moveToProgress: 'ಪ್ರಗತಿಗೆ ಸರಿಸಿ',
+		updating: 'ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...',
+		reopenIssue: 'ಮತ್ತೆ ತೆರೆಯಿರಿ',
+		statusUpdated: 'ಸ್ಥಿತಿ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ!',
 
 		// Report Page
 		reportNewIssue: 'ಹೊಸ ದೂರು ನೀಡಿ',
@@ -135,7 +150,14 @@ export const translations = {
 		editIssue: 'ದೂರು ತಿದ್ದುಪಡಿ',
 		saveChanges: 'ಉಳಿಸಿ',
 		cancel: 'ರದ್ದುಮಾಡಿ',
-		updateSuccess: 'ದೂರು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ!'
+		updateSuccess: 'ದೂರು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ!',
+
+		// Comments
+		comments: 'ಅಭಿಪ್ರಾಯಗಳು',
+		noComments: 'ಇನ್ನೂ ಯಾವುದೇ ಅಭಿಪ್ರಾಯಗಳಿಲ್ಲ.',
+		writeComment: 'ಅಭಿಪ್ರಾಯ ಬರೆಯಿರಿ...',
+		postComment: 'ಅಭಿಪ್ರಾಯ ಪೋಸ್ಟ್ ಮಾಡಿ',
+		posting: 'ಪೋಸ್ಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ...'
 	}
 };
 

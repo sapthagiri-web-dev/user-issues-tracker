@@ -16,8 +16,8 @@ const IssueDetails = () => {
 	const [loading, setLoading] = useState(true);
 	const [isUploading, setIsUploading] = useState(false);
 
-	const [isDeletingIssue, setIsDeletingIssue] = useState(false);
 	const [isDeletingAttachment, setIsDeletingAttachment] = useState(false);
+	const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
 	// Comments State
 	const [comments, setComments] = useState([]);
@@ -34,7 +34,7 @@ const IssueDetails = () => {
 	const [isSaving, setIsSaving] = useState(false);
 
 	// Modal State handling
-	const [modalType, setModalType] = useState(null); // 'RESOLVE' or 'DELETE_ATTACHMENT'
+	const [modalType, setModalType] = useState(null); // 'DELETE_ATTACHMENT' or null
 	const [attachmentToDelete, setAttachmentToDelete] = useState(null);
 
 	useEffect(() => {
@@ -176,10 +176,25 @@ const IssueDetails = () => {
 		}
 	};
 
-	// --- Deletion Handlers ---
+	// --- Status Update Handler ---
+	const updateIssueStatus = async (newStatus) => {
+		setIsUpdatingStatus(true);
+		try {
+			const { error } = await supabase
+				.from('issues')
+				.update({ status: newStatus })
+				.eq('id', id);
 
-	const initiateResolve = () => {
-		setModalType('RESOLVE');
+			if (error) throw error;
+
+			setIssue({ ...issue, status: newStatus });
+			alert(t('statusUpdated') || 'Status updated successfully!');
+		} catch (error) {
+			alert('Error updating status: ' + error.message);
+			console.error(error);
+		} finally {
+			setIsUpdatingStatus(false);
+		}
 	};
 
 	const initiateDeleteAttachment = (file) => {
@@ -188,45 +203,11 @@ const IssueDetails = () => {
 	};
 
 	const handleConfirmAction = async () => {
-		if (modalType === 'RESOLVE') {
-			await resolveIssue();
-		} else if (modalType === 'DELETE_ATTACHMENT') {
+		if (modalType === 'DELETE_ATTACHMENT') {
 			await deleteAttachment();
 		}
 		setModalType(null);
 		setAttachmentToDelete(null);
-	};
-
-	const resolveIssue = async () => {
-		setIsDeletingIssue(true);
-		try {
-			const { data: files, error: listError } = await supabase.storage
-				.from('issue-attachments')
-				.list(`${id}/`);
-
-			if (listError) console.warn('Error listing files:', listError);
-
-			if (files && files.length > 0) {
-				const filesToRemove = files.map((x) => `${id}/${x.name}`);
-				const { error: removeError } = await supabase.storage
-					.from('issue-attachments')
-					.remove(filesToRemove);
-				if (removeError) throw removeError;
-			}
-
-			const { error: deleteError } = await supabase
-				.from('issues')
-				.delete()
-				.eq('id', id);
-
-			if (deleteError) throw deleteError;
-			navigate('/');
-		} catch (error) {
-			alert('Error deleting issue: ' + error.message);
-			console.error(error);
-		} finally {
-			setIsDeletingIssue(false);
-		}
 	};
 
 	const deleteAttachment = async () => {
@@ -323,22 +304,13 @@ const IssueDetails = () => {
 
 	// Determine Modal Props based on type
 	const getModalProps = () => {
-		if (modalType === 'RESOLVE') {
-			return {
-				title: t('modalTitle'),
-				message: t('modalMessage'),
-				confirmText: t('modalConfirm'),
-				isDangerous: true
-			};
-		} else {
-			// DELETE_ATTACHMENT
-			return {
-				title: t('deleteAttachmentTitle'),
-				message: t('deleteAttachmentMessage'),
-				confirmText: t('deleteAttachmentConfirm'),
-				isDangerous: true
-			};
-		}
+		// DELETE_ATTACHMENT
+		return {
+			title: t('deleteAttachmentTitle'),
+			message: t('deleteAttachmentMessage'),
+			confirmText: t('deleteAttachmentConfirm'),
+			isDangerous: true
+		};
 	};
 
 	const modalProps = getModalProps();
@@ -374,23 +346,67 @@ const IssueDetails = () => {
 						</button>
 					)}
 
-					{/* Resolve Button */}
+					{/* Status Transition Buttons */}
 					{session && !isEditing && (
-						<button
-							onClick={initiateResolve}
-							disabled={isDeletingIssue}
-							style={{
-								background: '#fee2e2',
-								color: '#b91c1c',
-								border: '1px solid #fca5a5',
-								padding: '0.5rem 1rem',
-								borderRadius: 'var(--radius-sm)',
-								fontWeight: '600',
-								cursor: 'pointer'
-							}}
-						>
-							{isDeletingIssue ? t('closing') : t('markResolved')}
-						</button>
+						<>
+							{issue.status === 'Open' && (
+								<button
+									onClick={() => updateIssueStatus('In Progress')}
+									disabled={isUpdatingStatus}
+									style={{
+										background: '#fef3c7',
+										color: '#b45309',
+										border: '1px solid #fcd34d',
+										padding: '0.5rem 1rem',
+										borderRadius: 'var(--radius-sm)',
+										fontWeight: '600',
+										cursor: 'pointer'
+									}}
+								>
+									{isUpdatingStatus
+										? t('updating') || 'Updating...'
+										: t('moveToProgress') || 'Move to In Progress'}
+								</button>
+							)}
+							{issue.status === 'In Progress' && (
+								<button
+									onClick={() => updateIssueStatus('Resolved')}
+									disabled={isUpdatingStatus}
+									style={{
+										background: '#d1fae5',
+										color: '#047857',
+										border: '1px solid #6ee7b7',
+										padding: '0.5rem 1rem',
+										borderRadius: 'var(--radius-sm)',
+										fontWeight: '600',
+										cursor: 'pointer'
+									}}
+								>
+									{isUpdatingStatus
+										? t('updating') || 'Updating...'
+										: t('markResolved') || 'Mark as Resolved'}
+								</button>
+							)}
+							{issue.status === 'Resolved' && (
+								<button
+									onClick={() => updateIssueStatus('Open')}
+									disabled={isUpdatingStatus}
+									style={{
+										background: '#fee2e2',
+										color: '#b91c1c',
+										border: '1px solid #fca5a5',
+										padding: '0.5rem 1rem',
+										borderRadius: 'var(--radius-sm)',
+										fontWeight: '600',
+										cursor: 'pointer'
+									}}
+								>
+									{isUpdatingStatus
+										? t('updating') || 'Updating...'
+										: t('reopenIssue') || 'Reopen Issue'}
+								</button>
+							)}
+						</>
 					)}
 
 					{/* Editing Controls */}
