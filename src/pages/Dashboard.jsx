@@ -11,6 +11,7 @@ const Dashboard = () => {
 	const [error, setError] = useState(null);
 	const [searchTerm, setSearchTerm] = useState(''); // Search State
 	const [expandedIssueId, setExpandedIssueId] = useState(null); // Accordion State
+	const [statusFilter, setStatusFilter] = useState('All'); // Status Filter State
 
 	const { t } = useLanguage();
 	const { session } = useAuth();
@@ -56,7 +57,12 @@ const Dashboard = () => {
 		const term = searchTerm.toLowerCase();
 		const titleMatch = issue.title?.toLowerCase().includes(term);
 		const locationMatch = issue.location?.toLowerCase().includes(term);
-		return titleMatch || locationMatch;
+		const searchMatch = titleMatch || locationMatch;
+
+		// Status filter
+		const statusMatch = statusFilter === 'All' || issue.status === statusFilter;
+
+		return searchMatch && statusMatch;
 	});
 
 	return (
@@ -107,6 +113,40 @@ const Dashboard = () => {
 							outline: 'none'
 						}}
 					/>
+				</div>
+
+				{/* Status Filter Tabs */}
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'center',
+						gap: '0.5rem',
+						marginBottom: '1.5rem',
+						flexWrap: 'wrap'
+					}}
+				>
+					{['All', 'Open', 'In Progress', 'Resolved'].map((status) => (
+						<button
+							key={status}
+							onClick={() => setStatusFilter(status)}
+							style={{
+								padding: '0.5rem 1.5rem',
+								borderRadius: 'var(--radius-sm)',
+								border:
+									statusFilter === status
+										? '2px solid hsl(var(--color-primary))'
+										: '1px solid hsl(var(--color-primary) / 0.3)',
+								background:
+									statusFilter === status ? 'hsl(var(--color-primary))' : 'transparent',
+								color: statusFilter === status ? 'white' : 'hsl(var(--color-text))',
+								cursor: 'pointer',
+								fontWeight: statusFilter === status ? '600' : '400',
+								transition: 'all 0.2s ease'
+							}}
+						>
+							{t(`filter${status.replace(/\s/g, '')}`)}
+						</button>
+					))}
 				</div>
 
 				<button

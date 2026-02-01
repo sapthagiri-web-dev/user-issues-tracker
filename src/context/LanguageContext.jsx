@@ -12,6 +12,12 @@ export const translations = {
 		errorLoading: 'Failed to load issues. Please try again.',
 		noIssues: 'No issues found. Be the first to report one!',
 
+		// Filters
+		filterAll: 'All',
+		filterOpen: 'Open',
+		filterInProgress: 'In Progress',
+		filterResolved: 'Resolved',
+
 		// Issue Card
 		statusOpen: 'Open',
 		statusInProgress: 'In Progress',
@@ -90,6 +96,12 @@ export const translations = {
 		errorLoading:
 			'ಸಮಸ್ಯೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
 		noIssues: 'ಯಾವುದೇ ಸಮಸ್ಯೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ. ಮೊದಲಿಗರಾಗಿ ವರದಿ ಮಾಡಿ!',
+
+		// Filters
+		filterAll: 'ಎಲ್ಲಾ',
+		filterOpen: 'ತೆರೆದಿದೆ',
+		filterInProgress: 'ಪ್ರಗತಿಯಲ್ಲಿದೆ',
+		filterResolved: 'ಪರಿಹರಿಸಲಾಗಿದೆ',
 
 		// Issue Card
 		statusOpen: 'ತೆರೆದಿದೆ',
