@@ -45,10 +45,12 @@ const Dashboard = () => {
 
 		document.addEventListener('click', initAudio);
 		document.addEventListener('keydown', initAudio);
+		document.addEventListener('touchstart', initAudio);
 
 		return () => {
 			document.removeEventListener('click', initAudio);
 			document.removeEventListener('keydown', initAudio);
+			document.removeEventListener('touchstart', initAudio);
 			if (audioCtx) audioCtx.close();
 		};
 	}, []);
@@ -113,19 +115,27 @@ const Dashboard = () => {
 
 					// 3. Trigger Notification
 					console.log('Current Permission:', Notification.permission);
-					if (Notification.permission === 'granted') {
-						new Notification('New Issue Reported! / ಹೊಸ ದೂರು', {
+					const showNotification = () => {
+						const n = new Notification('New Issue Reported! / ಹೊಸ ದೂರು', {
 							body: `${newIssue.title} - ${newIssue.location}`,
-							icon: '/pwa-192x192.png'
+							icon: '/pwa-192x192.png',
+							tag: `issue-${newIssue.id}`, // Unique tag per issue to prevent overwriting
+							renotify: true, // Alert even if another notification is active
+							vibrate: [200, 100, 200], // Vibration pattern
+							requireInteraction: true // Keep in tray until user interacts
 						});
+						n.onclick = () => {
+							window.focus();
+							n.close();
+						};
+					};
+
+					if (Notification.permission === 'granted') {
+						showNotification();
 					} else if (Notification.permission !== 'denied') {
-						// Try requesting again if not explicitly denied
 						Notification.requestPermission().then((permission) => {
 							if (permission === 'granted') {
-								new Notification('New Issue Reported! / ಹೊಸ ದೂರು', {
-									body: `${newIssue.title} - ${newIssue.location}`,
-									icon: '/pwa-192x192.png'
-								});
+								showNotification();
 							}
 						});
 					}
