@@ -114,20 +114,33 @@ const Dashboard = () => {
 					playSound();
 
 					// 3. Trigger Notification
-					console.log('Current Permission:', Notification.permission);
-					const showNotification = () => {
-						const n = new Notification('New Issue Reported! / ಹೊಸ ದೂರು', {
-							body: `${newIssue.title} - ${newIssue.location}`,
-							icon: '/pwa-192x192.png',
-							tag: `issue-${newIssue.id}`, // Unique tag per issue to prevent overwriting
-							renotify: true, // Alert even if another notification is active
-							vibrate: [200, 100, 200], // Vibration pattern
-							requireInteraction: true // Keep in tray until user interacts
-						});
-						n.onclick = () => {
-							window.focus();
-							n.close();
-						};
+					// 3. Trigger Notification
+					const showNotification = async () => {
+						try {
+							const registration = await navigator.serviceWorker.ready;
+							if (registration && registration.showNotification) {
+								await registration.showNotification('New Issue Reported! / ಹೊಸ ದೂರು', {
+									body: `${newIssue.title} - ${newIssue.location}`,
+									icon: '/pwa-192x192.png',
+									tag: `issue-${newIssue.id}`,
+									renotify: true,
+									vibrate: [200, 100, 200],
+									requireInteraction: true,
+									data: { url: window.location.href } // Data for click handling
+								});
+							} else {
+								// Fallback for non-PWA/Dev contexts
+								const n = new Notification('New Issue Reported! / ಹೊಸ ದೂರು', {
+									body: `${newIssue.title} - ${newIssue.location}`,
+									icon: '/pwa-192x192.png',
+									tag: `issue-${newIssue.id}`,
+									vibrate: [200, 100, 200]
+								});
+								n.onclick = () => window.focus();
+							}
+						} catch (e) {
+							console.error('Notification failed:', e);
+						}
 					};
 
 					if (Notification.permission === 'granted') {
