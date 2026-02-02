@@ -23,9 +23,120 @@ const Dashboard = () => {
 	const { session } = useAuth();
 	const navigate = useNavigate();
 
+	// Audio Context Ref (Shared)
+	const [audioCtx, setAudioCtx] = useState(null);
+
+	useEffect(() => {
+		// Initialize AudioContext on first user interaction
+		const initAudio = () => {
+			const AudioContext = window.AudioContext || window.webkitAudioContext;
+			if (!AudioContext) return;
+
+			const ctx = new AudioContext();
+			if (ctx.state === 'suspended') {
+				ctx.resume();
+			}
+			setAudioCtx(ctx);
+
+			// Remove listener after first successful interaction
+			document.removeEventListener('click', initAudio);
+			document.removeEventListener('keydown', initAudio);
+		};
+
+		document.addEventListener('click', initAudio);
+		document.addEventListener('keydown', initAudio);
+
+		return () => {
+			document.removeEventListener('click', initAudio);
+			document.removeEventListener('keydown', initAudio);
+			if (audioCtx) audioCtx.close();
+		};
+	}, []);
+
+	// Notification Sound (Shared Context)
+	const playSound = () => {
+		if (!audioCtx) return;
+
+		try {
+			if (audioCtx.state === 'suspended') {
+				audioCtx.resume();
+			}
+
+			const now = audioCtx.currentTime;
+
+			// Helper to create a tone
+			const playTone = (freq, startTime, duration) => {
+				const osc = audioCtx.createOscillator();
+				const gain = audioCtx.createGain();
+
+				osc.connect(gain);
+				gain.connect(audioCtx.destination);
+
+				osc.type = 'sine';
+				osc.frequency.value = freq;
+
+				// Smooth envelope (Attack -> Decay)
+				gain.gain.setValueAtTime(0, startTime);
+				gain.gain.linearRampToValueAtTime(0.3, startTime + 0.05); // Attack
+				gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration); // Decay
+
+				osc.start(startTime);
+				osc.stop(startTime + duration);
+			};
+
+			// Play a "Success Chime" (Major 3rd interval: C5 -> E5)
+			playTone(523.25, now, 1.5); // C5
+			playTone(659.25, now + 0.1, 1.5); // E5 (slightly delayed)
+		} catch (error) {
+			console.error('Audio play failed:', error);
+		}
+	};
+
 	useEffect(() => {
 		fetchIssues();
-	}, []);
+
+		// Real-time Subscription
+		const channel = supabase
+			.channel('public:issues')
+			.on(
+				'postgres_changes',
+				{ event: 'INSERT', schema: 'public', table: 'issues' },
+				(payload) => {
+					console.log('New issue received:', payload);
+					const newIssue = payload.new;
+
+					// 1. Update State
+					setIssues((prev) => [newIssue, ...prev]);
+
+					// 2. Play Sound
+					playSound();
+
+					// 3. Trigger Notification
+					console.log('Current Permission:', Notification.permission);
+					if (Notification.permission === 'granted') {
+						new Notification('New Issue Reported! / ಹೊಸ ದೂರು', {
+							body: `${newIssue.title} - ${newIssue.location}`,
+							icon: '/pwa-192x192.png'
+						});
+					} else if (Notification.permission !== 'denied') {
+						// Try requesting again if not explicitly denied
+						Notification.requestPermission().then((permission) => {
+							if (permission === 'granted') {
+								new Notification('New Issue Reported! / ಹೊಸ ದೂರು', {
+									body: `${newIssue.title} - ${newIssue.location}`,
+									icon: '/pwa-192x192.png'
+								});
+							}
+						});
+					}
+				}
+			)
+			.subscribe();
+
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	}, [audioCtx]); // AudioCtx is required for playSound
 
 	async function fetchIssues() {
 		try {

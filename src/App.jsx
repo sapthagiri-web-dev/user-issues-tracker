@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
@@ -10,6 +10,13 @@ import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
 function App() {
+	useEffect(() => {
+		// Request notification permission on load
+		if ('Notification' in window) {
+			Notification.requestPermission();
+		}
+	}, []);
+
 	return (
 		<AuthProvider>
 			<LanguageProvider>

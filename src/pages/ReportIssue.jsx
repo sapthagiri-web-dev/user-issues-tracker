@@ -133,6 +133,13 @@ const ReportIssue = () => {
 			if (dbError) throw dbError;
 
 			// Success!
+			if (Notification.permission === 'granted') {
+				new Notification('Issue Reported! / ದೂರು ವರದಿ ಮಾಡಲಾಗಿದೆ', {
+					body: `Thank you, ${formData.affected_user}. Your issue has been submitted.`,
+					icon: '/pwa-192x192.png'
+				});
+			}
+
 			navigate('/');
 		} catch (err) {
 			setError(err.message);
@@ -195,23 +202,40 @@ const ReportIssue = () => {
 
 					<div className="form-group">
 						<label htmlFor="location">{t('selectVillage')}</label>
-						<input
-							type="text"
+						<select
 							id="location"
 							name="location"
-							value={extractVillageName(formData.location) || formData.location}
+							value={extractVillageName(formData.location) || ''}
 							onChange={handleVillageChange}
-							list="villages-list"
-							placeholder={t('searchVillage')}
 							required
-							autoComplete="off"
-						/>
-						<datalist id="villages-list">
+							style={{
+								width: '100%',
+								padding: '0.75rem 1rem',
+								borderRadius: '9999px',
+								border: '1px solid hsl(var(--color-bg-highlight))',
+								boxShadow: 'var(--shadow-sm)',
+								fontSize: '1rem',
+								backgroundColor: 'hsl(var(--color-bg-surface))',
+								color: 'hsl(var(--color-text-primary))',
+								cursor: 'pointer',
+								appearance: 'none',
+								backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+								backgroundRepeat: 'no-repeat',
+								backgroundPosition: 'right 1rem center',
+								backgroundSize: '1.2rem',
+								outline: 'none'
+							}}
+						>
+							<option value="">{t('selectVillage')}</option>
 							{MAGADI_VILLAGES.map((village) => {
 								const val = getVillageName(village, language);
-								return <option key={village.en} value={val} />;
+								return (
+									<option key={village.en} value={val}>
+										{val}
+									</option>
+								);
 							})}
-						</datalist>
+						</select>
 						{formData.location && (
 							<small
 								style={{
@@ -235,12 +259,19 @@ const ReportIssue = () => {
 							required
 							style={{
 								width: '100%',
-								padding: '0.75rem',
-								borderRadius: 'var(--radius-sm)',
-								border: '1px solid hsl(var(--color-primary) / 0.3)',
+								padding: '0.75rem 1rem',
+								borderRadius: '9999px',
+								border: '1px solid hsl(var(--color-bg-highlight))',
+								boxShadow: 'var(--shadow-sm)',
 								fontSize: '1rem',
-								background: 'hsl(var(--color-bg-secondary))',
-								color: 'hsl(var(--color-text))'
+								backgroundColor: 'hsl(var(--color-bg-surface))',
+								color: 'hsl(var(--color-text-primary))',
+								cursor: 'pointer',
+								appearance: 'none',
+								backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+								backgroundRepeat: 'no-repeat',
+								backgroundPosition: 'right 1rem center',
+								backgroundSize: '1.2rem'
 							}}
 						>
 							<option value="">{t('selectHobli')}</option>

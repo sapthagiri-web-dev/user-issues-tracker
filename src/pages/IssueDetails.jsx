@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import imageCompression from 'browser-image-compression';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -119,6 +120,26 @@ const IssueDetails = () => {
 
 		setIsUploading(true);
 		try {
+			let uploadFile = file;
+
+			// Compress if image
+			if (file.type.match(/image\/.*/)) {
+				const options = {
+					maxSizeMB: 1,
+					maxWidthOrHeight: 1920,
+					useWebWorker: true
+				};
+				try {
+					console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+					uploadFile = await imageCompression(file, options);
+					console.log(
+						`Compressed size: ${(uploadFile.size / 1024 / 1024).toFixed(2)} MB`
+					);
+				} catch (error) {
+					console.error('Compression failed, using original file:', error);
+				}
+			}
+
 			const fileExt = file.name.split('.').pop();
 			const fileName = `${Date.now()}_${Math.random()
 				.toString(36)
@@ -127,7 +148,7 @@ const IssueDetails = () => {
 
 			const { error: uploadError } = await supabase.storage
 				.from('issue-attachments')
-				.upload(filePath, file);
+				.upload(filePath, uploadFile);
 
 			if (uploadError) throw uploadError;
 
